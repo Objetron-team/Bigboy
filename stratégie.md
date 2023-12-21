@@ -22,7 +22,7 @@ Une dernière manière de marquer des points et de pouvoir prédire le score que
 => 20 pts
 
 ## Conclusion
-Si tout se passe comme prévu, nous devrions idéalement marqué 88 points.
+Si tout se passe comme prévu, nous devrions idéalement marquer 88 points.
 
 # Encore à faire
 schéma plateau + sketch 3D
