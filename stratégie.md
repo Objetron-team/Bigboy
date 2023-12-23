@@ -22,6 +22,7 @@ Une dernière manière de marquer des points et de pouvoir prédire le score que
 => 20 pts
 
 ## Conclusion
+Dans un premier temps, nous allons hardcoder notre robot afin qu'il puisse faire toutes ces tâches de manière autonome sans aide extérieure, juste à l'aide de ces capteurs. Il pourra se déplacer, se situer et éviter les obstcles grâce à ces capteurs ultra-sons. Une fois le robot autonome, nous ajouterons un système de caméra via une balise externe afin que le robot puisse avoir en permanence une idée générale du plateau afin de pouvoir optimiser ses mouvements.
 Si tout se passe comme prévu, nous devrions idéalement marquer 88 points.
 
 # Encore à faire
