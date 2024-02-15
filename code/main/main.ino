@@ -19,8 +19,11 @@
 Motor motorRight;
 Motor motorLeft;
 
-const int MOTOR_RIGHT_NBR = 1;
-const int MOTOR_LEFT_NBR = 2;
+const int MOTOR_RIGHT_SPEED_PIN = 1;
+const int MOTOR_RIGHT_DIRECTION_PIN = 2;
+
+const int MOTOR_LEFT_SPEED_PIN = 3;
+const int MOTOR_LEFT_DIRECTION_PIN = 4;
 
 const int acceleration_right = 50;  // % per sec
 const int acceleration_left = 50;  // % per sec
@@ -35,26 +38,26 @@ float min_speed_left = 0;//11.0f;
 float min_speed_right = 0;//11.0f;
 
 void InitMotor(){
-    Adafruit_MotorShield AFMS = Adafruit_MotorShield();
-    AFMS.begin();
 
-    motorRight.Init(AFMS,MOTOR_RIGHT_NBR,acceleration_right,threshold_speed_right,min_speed_right, max_speed_right);
-    motorLeft.Init(AFMS ,MOTOR_LEFT_NBR ,acceleration_left,threshold_speed_left,min_speed_left, max_speed_left);
+    motorRight.Init(MOTOR_RIGHT_DIRECTION_PIN,MOTOR_RIGHT_SPEED_PIN,acceleration_right,threshold_speed_right,min_speed_right, max_speed_right);
+    motorLeft.Init(MOTOR_LEFT_DIRECTION_PIN,MOTOR_LEFT_SPEED_PIN ,acceleration_left,threshold_speed_left,min_speed_left, max_speed_left);
 
     motorRight.SetSpeed(0);
     motorLeft.SetSpeed(0);
 }
 
-const int WHEEL_ENCODER_PIN_RIGHT = 3;
-const int WHEEL_ENCODER_PIN_LEFT = 2;
+const int WHEEL_ENCODER_PIN_RIGHT_A = 3;
+const int WHEEL_ENCODER_PIN_RIGHT_B = 4;
+const int WHEEL_ENCODER_PIN_LEFT_A = 2;
+const int WHEEL_ENCODER_PIN_LEFT_B = 5;
 
 Encoder encoderRight;
 Encoder encoderLeft;
 
 void InitEncoder(){
 
-    encoderRight.Init(&motorRight,WHEEL_ENCODER_PIN_RIGHT);
-    encoderLeft.Init(&motorLeft,WHEEL_ENCODER_PIN_LEFT);
+    encoderRight.Init(&motorRight,WHEEL_ENCODER_PIN_RIGHT_A,WHEEL_ENCODER_PIN_RIGHT_B);
+    encoderLeft.Init(&motorLeft,WHEEL_ENCODER_PIN_LEFT_A,WHEEL_ENCODER_PIN_LEFT_B);
 
     attachInterrupt(digitalPinToInterrupt(WHEEL_ENCODER_PIN_RIGHT), CouterRight, FALLING);
     attachInterrupt(digitalPinToInterrupt(WHEEL_ENCODER_PIN_LEFT), CouterLeft, FALLING);

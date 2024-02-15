@@ -1,6 +1,4 @@
 #include <Wire.h>
-#include <Adafruit_MotorShield.h>
-
 
 #ifndef Motor_h
 
@@ -8,8 +6,8 @@
 
 class Motor {
     private:
-        Adafruit_MotorShield shield;
-        Adafruit_DCMotor *ada_motor;
+        int pin_direction;
+        int pin_speed;
 
         float target_speed;
         float current_speed;
@@ -21,10 +19,10 @@ class Motor {
         long last_update_time;
         float max_acceleration; //in power/seconde -> 0.1 is 10% increase per seconde
 
-        void SetMotorSpeendAndDir(float speed);
+        void SetMotorSpeendAndDir(float speed); //value between -100 and 100
 
     public:
-        void Init(Adafruit_MotorShield adafruit_motorShield,int motor_nbr,float max_acceleration_, float threshold_speed, float min_speed,float max_speed);
+        void Init(int pin_direction,int pin_speed,float max_acceleration_, float threshold_speed, float min_speed,float max_speed);
         void SetSpeed(float target);
         void UrgentStop();
         int GetDirection();

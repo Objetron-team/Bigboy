@@ -12,7 +12,9 @@ class Encoder {
     private:
         Motor *motor;
 
-        int pin;
+        int pin_a;
+        int pin_b;
+        
         int counter;
         int counter_back;
 
@@ -29,7 +31,7 @@ class Encoder {
         float rotation_speeds[5];
 
     public:
-        void Init(Motor *motor_,int pin_);
+        void Init(Motor *motor_,int pin_a_,int pin_b_);
 
         void DebouncedCount();
         void ResetCounter();

@@ -2,17 +2,18 @@
 #include <Arduino.h>;
 
 
-void Motor::Init(Adafruit_MotorShield adafruit_motorShield,int motor_nbr,float max_acceleration_, float threshold_speed, float min_speed,float max_speed){
-    shield = adafruit_motorShield;
-    ada_motor = shield.getMotor(motor_nbr);
+void Motor::Init(int pin_direction_,int pin_speed_,float max_acceleration_, float threshold_speed, float min_speed,float max_speed){
+
+    this->pin_direction = pin_direction_;
+    this->pin_speed = pin_speed_;
 
     this->max_acceleration = max_acceleration_;
     this->threshold_speed = threshold_speed;
     this->min_speed = min_speed;
     this->max_speed = max_speed;
 
-    ada_motor->setSpeed(0);
-    ada_motor->run(RELEASE);
+    pinMode(pin_direction, OUTPUT);
+    pinMode(pin_speed, OUTPUT);
 
     target_speed = 0;
     current_speed = 0;
@@ -86,21 +87,18 @@ void Motor::SetMotorSpeendAndDir(float speed){
         speed = sign * min_speed;
     }
 
-    //Convert the speed in % to a value between 0 and 255
+    //Convert the speed in % to a value between 0 and 1024
 
-    float value = abs(speed) * 255.0 / 100.0;
-
-    ada_motor->setSpeed(value);
+    float value = abs(speed) * 1024 / 100.0;
 
     if(speed < 0){
-        ada_motor->run(BACKWARD);
+        digitalWrite(pin_direction, HIGH);
     }
-    if(speed == 0){
-        ada_motor->run(FORWARD);
+    if(speed >= 0){
+        digitalWrite(pin_direction, LOW);
     }
-    if(speed > 0){
-        ada_motor->run(FORWARD);
-    }
+
+    analogWrite(pin_speed, value);
 }
 
 
