@@ -16,14 +16,25 @@
 #include "ultrasound/ultrasound.h";
 #include "ultrasound/ultrasound.cpp";
 
+
+/*
+    - adruino mega pins
+
+    interrup -> 18,19,20,21,    2 and 3
+
+    analogue write -> 2..13, 44..46
+
+*/
+
+
 Motor motorRight;
 Motor motorLeft;
 
-const int MOTOR_RIGHT_SPEED_PIN = 1;
-const int MOTOR_RIGHT_DIRECTION_PIN = 2;
+const int MOTOR_RIGHT_SPEED_PIN = 2;
+const int MOTOR_RIGHT_DIRECTION_PIN = 3;
 
-const int MOTOR_LEFT_SPEED_PIN = 3;
-const int MOTOR_LEFT_DIRECTION_PIN = 4;
+const int MOTOR_LEFT_SPEED_PIN = 4;
+const int MOTOR_LEFT_DIRECTION_PIN = 5;
 
 const int acceleration_right = 50;  // % per sec
 const int acceleration_left = 50;  // % per sec
@@ -46,10 +57,10 @@ void InitMotor(){
     motorLeft.SetSpeed(0);
 }
 
-const int WHEEL_ENCODER_PIN_RIGHT_A = 3;
-const int WHEEL_ENCODER_PIN_RIGHT_B = 4;
-const int WHEEL_ENCODER_PIN_LEFT_A = 2;
-const int WHEEL_ENCODER_PIN_LEFT_B = 5;
+const int WHEEL_ENCODER_PIN_RIGHT_A = 18;
+const int WHEEL_ENCODER_PIN_RIGHT_B = 19;
+const int WHEEL_ENCODER_PIN_LEFT_A = 20;
+const int WHEEL_ENCODER_PIN_LEFT_B = 12;
 
 Encoder encoderRight;
 Encoder encoderLeft;
@@ -59,8 +70,12 @@ void InitEncoder(){
     encoderRight.Init(&motorRight,WHEEL_ENCODER_PIN_RIGHT_A,WHEEL_ENCODER_PIN_RIGHT_B);
     encoderLeft.Init(&motorLeft,WHEEL_ENCODER_PIN_LEFT_A,WHEEL_ENCODER_PIN_LEFT_B);
 
-    attachInterrupt(digitalPinToInterrupt(WHEEL_ENCODER_PIN_RIGHT), CouterRight, FALLING);
-    attachInterrupt(digitalPinToInterrupt(WHEEL_ENCODER_PIN_LEFT), CouterLeft, FALLING);
+    attachInterrupt(digitalPinToInterrupt(WHEEL_ENCODER_PIN_RIGHT_A), CouterRight, CHANGE);
+
+    //attachInterrupt(digitalPinToInterrupt(WHEEL_ENCODER_PIN_RIGHT_B), CouterRightB, CHANGE);
+
+
+    attachInterrupt(digitalPinToInterrupt(WHEEL_ENCODER_PIN_LEFT_A), CouterLeft, FALLING);
 }
 
 void CouterRight(){
@@ -252,6 +267,24 @@ void DebugUltrasound(){
     Serial.println(ultrasound.GetDistance());
 }
 
+void DebugEncoder(){
+    Serial.print("Encoder R:");
+    Serial.print(encoderRight.GetRotationSpeed());
+    Serial.print(",");
+
+    Serial.print("Encoder R Counter:");
+    Serial.print(encoderRight.GetCounter());
+    Serial.print(",");
+
+    Serial.print("Encoder R Direction:");
+    Serial.print(encoderRight.GetDirection());
+    Serial.print(",");
+
+    Serial.print("Encoder L:");
+    Serial.println(encoderLeft.GetRotationSpeed());
+    //Serial.print(",");
+}
+
 void loop() {
 
 
@@ -269,6 +302,9 @@ void loop() {
     float distance_mm = measure / 2.0 * SOUND_SPEED;
     
     //Debug(distance_mm / 10);
+    DebugEncoder();
+    //encoderRight.GetRotationSpeed();
+
 
     SerialCommande();
 
