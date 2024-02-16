@@ -20,20 +20,27 @@ void Encoder::Init(Motor *motor_,int pin_a_,int pin_b_){
         rotation_speeds[i] = 0;
     }
 
-    pinMode(pin, INPUT_PULLUP);
+    pinMode(pin_a, INPUT_PULLUP);
+    pinMode(pin_b, INPUT_PULLUP);
+
+    
 }
 
 void Encoder::DebouncedCount(){
 
+    // 2khz to s -> 0.0005s
+    if (micros() - last_wheel_interrupt < last_wheel_interrupt_debounced_micros) return;
+
     int MSB = digitalRead(this->pin_a); // Read the A and B encoder pins
     int LSB = digitalRead(this->pin_b);
-    int encoded = (MSB << 1) | LSB;
-    int sum = (lastEncoded << 2) | encoded;
-    
-    if ((sum == 0b1101) || (sum == 0b0100) || (sum == 0b0010) || (sum == 0b1011))
+
+    if ((MSB == HIGH && LSB == LOW) || (MSB == LOW && LSB == HIGH)) {
         counter++;
-    else if ((sum == 0b1110) || (sum == 0b0111) || (sum == 0b0001) || (sum == 0b1000))
+        this->direction = 1;
+    } else {
         counter--;
+        this->direction = -1;
+    }
 
     last_wheel_interrupt = micros();
 }
@@ -42,16 +49,12 @@ void Encoder::ResetCounter(){
     counter = 0;
 }
 
-float Encoder::GetSpeed(){
-    return motor->GetSpeed();
-}
-
 int Encoder::GetCounter(){
     return counter;
 }
 
-float Encoder::GetDistance(){
-    return (counter * wheel_circumference) / encoder_resolution;
+int Encoder::GetDirection(){
+    return direction;
 }
 
 float Encoder::GetRotationSpeed(){
@@ -65,11 +68,10 @@ float Encoder::GetRotationSpeed(){
             rotation_speeds[i] = rotation_speeds[i-1];
         }
 
-        float delta_counter = counter - counter_back;
-        float direction = delta_counter > 0 ? 1 : -1;
+        float delta_counter = counter - counter_back; // Calculate the difference between counter and counter_back
 
         //add the new measurement to the array -> tick per second
-        rotation_speeds[0] = ((delta_counter) * direction) * 1000 / (current_time - last_wheel_speed_measurement);
+        rotation_speeds[0] = ((delta_counter) ) * 1000 / (current_time - last_wheel_speed_measurement);
         
         counter_back = counter;
         last_wheel_speed_measurement = current_time;
