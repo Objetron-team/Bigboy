@@ -30,6 +30,8 @@
 Motor motorRight;
 Motor motorLeft;
 
+const bool PAMI_DUAL_INPUT = false;
+
 const int MOTOR_RIGHT_SPEED_PIN = 2;
 const int MOTOR_RIGHT_DIRECTION_PIN = 3;
 
@@ -50,8 +52,8 @@ float min_speed_right = 0;//11.0f;
 
 void InitMotor(){
 
-    motorRight.Init(MOTOR_RIGHT_DIRECTION_PIN,MOTOR_RIGHT_SPEED_PIN,acceleration_right,threshold_speed_right,min_speed_right, max_speed_right);
-    motorLeft.Init(MOTOR_LEFT_DIRECTION_PIN,MOTOR_LEFT_SPEED_PIN ,acceleration_left,threshold_speed_left,min_speed_left, max_speed_left);
+    motorRight.Init(MOTOR_RIGHT_DIRECTION_PIN,MOTOR_RIGHT_SPEED_PIN,acceleration_right,threshold_speed_right,min_speed_right, max_speed_right,PAMI_DUAL_INPUT);
+    motorLeft.Init(MOTOR_LEFT_DIRECTION_PIN,MOTOR_LEFT_SPEED_PIN ,acceleration_left,threshold_speed_left,min_speed_left, max_speed_left,PAMI_DUAL_INPUT);
 
     motorRight.SetSpeed(0);
     motorLeft.SetSpeed(0);
