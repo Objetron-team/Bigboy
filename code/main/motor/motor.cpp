@@ -16,7 +16,6 @@ void Motor::Init(int pin_direction_,int pin_speed_,float max_acceleration_, floa
     pinMode(pin_direction, OUTPUT);
     pinMode(pin_speed, OUTPUT);
 
-    target_speed = 0;
     current_speed = 0;
 }
 
@@ -31,38 +30,39 @@ float Motor::GetSpeed(){
 void Motor::SetSpeed(float target){
 
     //Increase or decrease the current speed to reach the target speed by the max acceleration
-
-    if(target == target_speed){
-        return;
-    }
-
     float delta_time = (millis() - last_update_time) / 1000.0;
     last_update_time = millis();
 
+    int target_sign = abs(target) / target;
+
+    if(abs(target) < threshold_speed){
+        target = 0;
+    }
+
+    if(abs(target) > max_speed){
+        target = target_sign * max_speed;
+    }
+
+
     float delta_speed = delta_time * max_acceleration;
 
-    if(target > target_speed){
+    if(target > current_speed){
         current_speed += delta_speed;
         if(current_speed > target){
             current_speed = target;
         }
     }
-    if(target < target_speed){
+    if(target < current_speed){
         current_speed -= delta_speed;
         if(current_speed < target){
             current_speed = target;
         }
     }
 
-    if(abs(current_speed) >= abs(target_speed) && target_speed != 0){
-        current_speed = target_speed;
-    }
-
     SetMotorSpeendAndDir(current_speed);
 }
 
 void Motor::UrgentStop(){
-    target_speed = 0;
     current_speed = 0;
 
     SetMotorSpeendAndDir(0);
@@ -73,24 +73,14 @@ void Motor::UrgentStop(){
     param: speed in % (between -100 and 100)
 */
 void Motor::SetMotorSpeendAndDir(float speed){
-
     int sign = GetDirection();
 
-    if(abs(speed) < threshold_speed){
-        speed = 0;
-    }
-
-    if(abs(speed) > max_speed){
-        speed = sign * max_speed;
-    }
-
-    if(abs(speed) < min_speed){
+    if(abs(speed) < min_speed && speed != 0){
         speed = sign * min_speed;
     }
 
-    //Convert the speed in % to a value between 0 and 1024
-
-    float value = abs(speed) * 1024 / 100.0;
+    //Convert the speed in % to a value between 0 and 255
+    float value = abs(speed) * 255 / 100.0;
 
     if(dual_input){
 
@@ -101,9 +91,12 @@ void Motor::SetMotorSpeendAndDir(float speed){
         if(speed < 0){
             analogWrite(pin_speed, value);
             analogWrite(pin_direction, 0);
-        }else{
+        }else if(speed > 0){
             analogWrite(pin_speed, 0);
             analogWrite(pin_direction, value);
+        }else{
+            analogWrite(pin_speed, 0);
+            analogWrite(pin_direction, 0);
         }
 
         return;

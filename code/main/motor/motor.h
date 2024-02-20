@@ -10,7 +10,6 @@ class Motor {
         int pin_direction;
         int pin_speed;
 
-        float target_speed;
         float current_speed;
 
         float threshold_speed;
