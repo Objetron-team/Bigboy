@@ -2,8 +2,9 @@
 #include <Arduino.h>;
 
 
-void Motor::Init(int pin_direction_,int pin_speed_,float max_acceleration_, float threshold_speed, float min_speed,float max_speed){
+void Motor::Init(int pin_direction_,int pin_speed_,float max_acceleration_, float threshold_speed, float min_speed,float max_speed, bool dual_input_){
 
+    this->dual_input = dual_input_;
     this->pin_direction = pin_direction_;
     this->pin_speed = pin_speed_;
 
@@ -90,6 +91,23 @@ void Motor::SetMotorSpeendAndDir(float speed){
     //Convert the speed in % to a value between 0 and 1024
 
     float value = abs(speed) * 1024 / 100.0;
+
+    if(dual_input){
+
+        // in dual_input mode, the pin_direction is used a a second speed pin, the two speed pins are used to control the speed of the motor and direction.
+        // pin_direction -> speed in forward direction
+        // pin_speed -> speed in backward direction
+
+        if(speed < 0){
+            analogWrite(pin_speed, value);
+            analogWrite(pin_direction, 0);
+        }else{
+            analogWrite(pin_speed, 0);
+            analogWrite(pin_direction, value);
+        }
+
+        return;
+    }
 
     if(speed < 0){
         digitalWrite(pin_direction, HIGH);

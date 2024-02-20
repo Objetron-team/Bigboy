@@ -6,6 +6,7 @@
 
 class Motor {
     private:
+        bool dual_input;
         int pin_direction;
         int pin_speed;
 
@@ -22,7 +23,7 @@ class Motor {
         void SetMotorSpeendAndDir(float speed); //value between -100 and 100
 
     public:
-        void Init(int pin_direction,int pin_speed,float max_acceleration_, float threshold_speed, float min_speed,float max_speed);
+        void Init(int pin_direction,int pin_speed,float max_acceleration_, float threshold_speed, float min_speed,float max_speed, bool dual_input_ = false);
         void SetSpeed(float target);
         void UrgentStop();
         int GetDirection();
