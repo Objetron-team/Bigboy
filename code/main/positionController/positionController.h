@@ -35,6 +35,11 @@ class PositionController
         
         Path GetLastPath();
 
+        float wheel_circumference;
+        float wheel_diameter;
+        float encoder_resolution;
+
+
         bool manual_path_mode = false;
         bool next_path = false;
 

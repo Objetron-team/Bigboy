@@ -25,19 +25,16 @@ class Encoder {
         int direction;
         float rotation_speeds[5];
 
-        const int encoder_resolution = 64;
-        const float wheel_diameter = 0.026;
-        const float wheel_circumference = wheel_diameter * PI;
-        const float degrees_per_pulse = 360.0 / encoder_resolution;
-        const float measurement_interval_ms = 5;
-
+        float measurement_interval_ms = 5;
 
     public:
 
+        int encoder_resolution;
+        float wheel_diameter;
+        float wheel_circumference = wheel_diameter * PI;
+        float degrees_per_pulse = 360.0 / encoder_resolution;
 
-
-
-        void Init(Motor *motor_,int pin_a_,int pin_b_);
+        void Init(Motor *motor_,int pin_a_,int pin_b_, float wheel_diameter_ = 0.026, int encoder_resolution_ = 64, float measurement_interval_ms_ = 5);
 
         void DebouncedCount();
         void ResetCounter();

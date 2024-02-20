@@ -24,11 +24,11 @@ void DriveController::Init(Motor *motor_left, Motor *motor_right, Encoder *encod
     pid_left.Init(p_left,i_left,d_left , -100, 100);
     pid_right.Init(p_right,i_right,d_right, -100, 100);
 
-    float p_distance = 7;
+    float p_distance = 1;
     float i_distance = 0;
     float d_distance = 0;
 
-    float p_angle = 6;
+    float p_angle = 1;
     float i_angle = 0;
     float d_angle = 0;
 
@@ -93,6 +93,7 @@ void DriveController::Update(float obstacle_distance){
 
     target_speed_right += angle_speed;
     target_speed_left -= angle_speed;
+
 
     motor_left->SetSpeed(target_speed_left);
     motor_right->SetSpeed(target_speed_right);

@@ -65,13 +65,17 @@ const int WHEEL_ENCODER_PIN_RIGHT_B = 19;
 const int WHEEL_ENCODER_PIN_LEFT_A = 20;
 const int WHEEL_ENCODER_PIN_LEFT_B = 21;
 
+const float WHEEL_DIAMETER = 0.026; //m
+const float ENCODER_RESOLUTION = 3575.04; //pulse per rotation
+const float DEBOUNCED_TIME = 5.0f; //ms    
+
 Encoder encoderRight;
 Encoder encoderLeft;
 
 void InitEncoder(){
 
-    encoderRight.Init(&motorRight,WHEEL_ENCODER_PIN_RIGHT_A,WHEEL_ENCODER_PIN_RIGHT_B);
-    encoderLeft.Init(&motorLeft,WHEEL_ENCODER_PIN_LEFT_A,WHEEL_ENCODER_PIN_LEFT_B);
+    encoderRight.Init(&motorRight,WHEEL_ENCODER_PIN_RIGHT_A,WHEEL_ENCODER_PIN_RIGHT_B,WHEEL_DIAMETER,ENCODER_RESOLUTION,DEBOUNCED_TIME);
+    encoderLeft.Init(&motorLeft,WHEEL_ENCODER_PIN_LEFT_A,WHEEL_ENCODER_PIN_LEFT_B,WHEEL_DIAMETER,ENCODER_RESOLUTION,DEBOUNCED_TIME);
 
     attachInterrupt(digitalPinToInterrupt(WHEEL_ENCODER_PIN_RIGHT_A), CouterRight, CHANGE);
 
@@ -178,7 +182,7 @@ void SerialCommande(){
                 positionController.AddPoint({20,90});
                 break;
             case 'y':
-                positionController.AddPoint({20,});
+                positionController.AddPoint({20,0});
                 positionController.AddPoint({20,-90});
                 break;
             
@@ -325,6 +329,7 @@ void loop() {
     float distance_mm = measure / 2.0 * SOUND_SPEED;
     
     //Debug(distance_mm / 10);
+    //DebugPath();
     DebugEncoder();
     //encoderRight.GetRotationSpeed();
 
@@ -333,7 +338,7 @@ void loop() {
 
     SerialCommande();
 
-    //positionController.Update(distance_mm / 10);
+    positionController.Update(distance_mm / 10);
 
     //delay(5);
 

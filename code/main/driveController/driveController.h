@@ -12,13 +12,6 @@ class DriveController
 {
 private:
     /* data */
-
-    Motor *motor_left;
-    Motor *motor_right;
-
-    Encoder *encoder_left;
-    Encoder *encoder_right;
-
     PID pid_left;
     PID pid_right;
 
@@ -44,6 +37,12 @@ private:
     long last_update_time;
 
 public:
+
+    Motor *motor_left;
+    Motor *motor_right;
+
+    Encoder *encoder_left;
+    Encoder *encoder_right;
 
     void Init(Motor *motor_left, Motor *motor_right, Encoder *encoder_left, Encoder *encoder_right);
 

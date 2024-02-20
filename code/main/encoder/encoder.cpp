@@ -3,12 +3,16 @@
 #include "../motor/motor.h";
 
 
-void Encoder::Init(Motor *motor_,int pin_a_,int pin_b_){
+void Encoder::Init(Motor *motor_,int pin_a_,int pin_b_, float wheel_diameter_, int encoder_resolution_, float measurement_interval_ms_){
 
     motor = motor_;
 
     pin_a = pin_a_;
     pin_b = pin_b_;
+
+    wheel_diameter = wheel_diameter_;
+    encoder_resolution = encoder_resolution_;
+    measurement_interval_ms = measurement_interval_ms_;
 
     counter = 0;
     last_wheel_interrupt = 0;

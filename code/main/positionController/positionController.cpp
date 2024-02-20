@@ -6,6 +6,10 @@ void PositionController::Init(DriveController *drive_controller, Ultrasound *ult
     this->drive_controller = drive_controller;
     this->ultrasound = ultrasound;
 
+    this->wheel_diameter = this->drive_controller->encoder_left->wheel_diameter;
+    this->wheel_circumference = this->drive_controller->encoder_left->wheel_diameter * PI;
+    this->encoder_resolution = this->drive_controller->encoder_left->encoder_resolution;
+
     current_position.x = 0;
     current_position.y = 0;
     current_angle = 0;
@@ -44,9 +48,9 @@ void PositionController::Update(float obstacle_distance){
 
     this->drive_controller->Update(obstacle_distance);
 
-    this->current_position.x = this->drive_controller->GetX() * 6.5 * PI / 40;
-    this->current_position.y = this->drive_controller->GetY() * 6.5 * PI / 40;
-    this->current_angle = (this->drive_controller->GetCurrentAngle() * PI / 40) * 180 / PI;
+    this->current_position.x = this->drive_controller->GetX() * this->wheel_diameter * 100 * PI / this->encoder_resolution;
+    this->current_position.y = this->drive_controller->GetY() * this->wheel_diameter * 100 * PI / this->encoder_resolution;
+    this->current_angle = (this->drive_controller->GetCurrentAngle() * PI / this->encoder_resolution) * 180 / PI;
 
     if( (IsTaskCompleted() == 1 && manual_path_mode == false) || (next_path == true && manual_path_mode == true )  ){
 
@@ -66,7 +70,7 @@ void PositionController::Update(float obstacle_distance){
             if(Disance(previous_task.point,current_task.point) != 0){
 
                 //convert the distance (in cm) to a nbr of ticks
-                distance = distance * 40 / (6.5 * PI);
+                distance = distance * this->encoder_resolution / (this->wheel_diameter * 100 * PI);
 
                 this->drive_controller->SetTargetDistance(distance);
             }
@@ -75,7 +79,7 @@ void PositionController::Update(float obstacle_distance){
 
                 float angle_rad = angle * PI / 180;
 
-                float arc_length = angle_rad * 40 / PI;
+                float arc_length = angle_rad * this->encoder_resolution / PI;
 
                 this->drive_controller->SetTargetAngle(arc_length);
 
