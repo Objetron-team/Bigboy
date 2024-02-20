@@ -30,7 +30,7 @@
 Motor motorRight;
 Motor motorLeft;
 
-const bool PAMI_DUAL_INPUT = false;
+const bool PAMI_DUAL_INPUT = true;
 
 const int MOTOR_RIGHT_SPEED_PIN = 2;
 const int MOTOR_RIGHT_DIRECTION_PIN = 3;
@@ -41,8 +41,8 @@ const int MOTOR_LEFT_DIRECTION_PIN = 5;
 const int acceleration_right = 50;  // % per sec
 const int acceleration_left = 50;  // % per sec
 
-float max_speed_left = 19.5f;
-float max_speed_right = 19.5f;
+float max_speed_left = 50.0f;
+float max_speed_right = 50.0f;
 
 float threshold_speed_left = 3.0f;
 float threshold_speed_right = 3.0f;
@@ -61,8 +61,9 @@ void InitMotor(){
 
 const int WHEEL_ENCODER_PIN_RIGHT_A = 18;
 const int WHEEL_ENCODER_PIN_RIGHT_B = 19;
+
 const int WHEEL_ENCODER_PIN_LEFT_A = 20;
-const int WHEEL_ENCODER_PIN_LEFT_B = 12;
+const int WHEEL_ENCODER_PIN_LEFT_B = 21;
 
 Encoder encoderRight;
 Encoder encoderLeft;
@@ -74,10 +75,7 @@ void InitEncoder(){
 
     attachInterrupt(digitalPinToInterrupt(WHEEL_ENCODER_PIN_RIGHT_A), CouterRight, CHANGE);
 
-    //attachInterrupt(digitalPinToInterrupt(WHEEL_ENCODER_PIN_RIGHT_B), CouterRightB, CHANGE);
-
-
-    attachInterrupt(digitalPinToInterrupt(WHEEL_ENCODER_PIN_LEFT_A), CouterLeft, FALLING);
+    attachInterrupt(digitalPinToInterrupt(WHEEL_ENCODER_PIN_LEFT_A), CouterLeft, CHANGE);
 }
 
 void CouterRight(){
@@ -142,6 +140,8 @@ void setup() {
 
     //DebugPath();
 }
+float speed = 0;
+
 
 void SerialCommande(){
 
@@ -181,6 +181,18 @@ void SerialCommande(){
                 positionController.AddPoint({20,});
                 positionController.AddPoint({20,-90});
                 break;
+            
+            case 'f':
+                speed = -100;
+                break;
+            case 'g':
+                speed = 100;
+                break;
+            case 'h':
+                speed = 0;
+                break;
+            
+              
             default:
                 break;
         }
@@ -283,12 +295,21 @@ void DebugEncoder(){
     Serial.print(",");
 
     Serial.print("Encoder L:");
-    Serial.println(encoderLeft.GetRotationSpeed());
+    Serial.print(encoderLeft.GetRotationSpeed());
+    Serial.print(",");
+
+    Serial.print("Encoder L Counter:");
+    Serial.print(encoderLeft.GetCounter());
+    Serial.print(",");
+
+    Serial.print("Encoder L Direction:");
+    Serial.println(encoderLeft.GetDirection());
     //Serial.print(",");
+
 }
 
-void loop() {
 
+void loop() {
 
     digitalWrite(TRIGGER_PIN, HIGH);
     delayMicroseconds(10);
@@ -307,10 +328,12 @@ void loop() {
     DebugEncoder();
     //encoderRight.GetRotationSpeed();
 
+    //motorRight.SetSpeed(speed);
+    //motorLeft.SetSpeed(speed);
 
     SerialCommande();
 
-    positionController.Update(distance_mm / 10);
+    //positionController.Update(distance_mm / 10);
 
     //delay(5);
 
