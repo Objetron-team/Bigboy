@@ -9,7 +9,7 @@ class Ultrasound {
     byte pinEcho;
     byte pinTrigger;
     const unsigned long MEASURE_TIMEOUT = 25000UL;
-    const float SOUND_SPEED = 340/1000;
+    const float SOUND_SPEED = 340.0 / 1000;
 
     int last_mesure_time;
 
