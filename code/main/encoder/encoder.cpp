@@ -90,3 +90,20 @@ float Encoder::GetRotationSpeed(){
 
     return rotation_speed;
 }
+
+float Encoder::GetSpeed(){  // in % of max speed
+
+    int max = 1400; //max speed in ticks per second
+
+    float speed = GetRotationSpeed();
+
+    if (speed > max){
+        speed = max;
+    }
+
+    return speed / max * 100;
+}
+
+float Encoder::GetDistance(){
+    return counter * wheel_circumference / encoder_resolution;  //in meters
+}
