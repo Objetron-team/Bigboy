@@ -64,8 +64,8 @@ const int MOTOR_RIGHT_DIRECTION_PIN = 32;
 const int MOTOR_LEFT_SPEED_PIN = 26;
 const int MOTOR_LEFT_DIRECTION_PIN = 25;
 
-const int acceleration_right = 50;  // % per sec
-const int acceleration_left = 50;  // % per sec
+const int acceleration_right = 70;  // % per sec
+const int acceleration_left = 70;  // % per sec
 
 float max_speed_left = 100.0f;
 float max_speed_right = 100.0f;
@@ -88,12 +88,16 @@ void InitMotor(){
 const int WHEEL_ENCODER_PIN_RIGHT_A = 18;
 const int WHEEL_ENCODER_PIN_RIGHT_B = 19;
 
-const int WHEEL_ENCODER_PIN_LEFT_A = 5;
-const int WHEEL_ENCODER_PIN_LEFT_B = 17;
+const int MAX_ENCODER_FREQUENCY = 1470; //Hz
+
+const int WHEEL_ENCODER_PIN_LEFT_A = 36;
+const int WHEEL_ENCODER_PIN_LEFT_B = 39;
 
 const float WHEEL_DIAMETER = 0.026; //m
-const float ENCODER_RESOLUTION = 35750.04; //pulse per rotation
-const float DEBOUNCED_TIME = 50.0f; //ms    
+const float ENCODER_RESOLUTION = 1000; //pulse per rotation
+
+//debounce time in ms based on the max frequency
+const float DEBOUNCED_TIME = 50;
 
 Encoder encoderRight;
 Encoder encoderLeft;
@@ -101,20 +105,25 @@ Encoder encoderLeft;
 void InitEncoder(){
 
     encoderRight.Init(&motorRight,WHEEL_ENCODER_PIN_RIGHT_A,WHEEL_ENCODER_PIN_RIGHT_B,WHEEL_DIAMETER,ENCODER_RESOLUTION,DEBOUNCED_TIME);
+    
     encoderLeft.Init(&motorLeft,WHEEL_ENCODER_PIN_LEFT_A,WHEEL_ENCODER_PIN_LEFT_B,WHEEL_DIAMETER,ENCODER_RESOLUTION,DEBOUNCED_TIME);
 
     attachInterrupt(digitalPinToInterrupt(WHEEL_ENCODER_PIN_RIGHT_A), CouterRight, CHANGE);
     //attachInterrupt(digitalPinToInterrupt(WHEEL_ENCODER_PIN_RIGHT_B), CouterRight, CHANGE);
 
-    attachInterrupt(digitalPinToInterrupt(WHEEL_ENCODER_PIN_LEFT_A), CouterLeft, CHANGE);
-    //attachInterrupt(digitalPinToInterrupt(WHEEL_ENCODER_PIN_LEFT_B), CouterLeft, CHANGE);
+    attachInterrupt(digitalPinToInterrupt(WHEEL_ENCODER_PIN_LEFT_A), CounterLeftA, RISING);
+    //attachInterrupt(digitalPinToInterrupt(WHEEL_ENCODER_PIN_LEFT_B), CounterLeftB, CHANGE);
 }
 
 void CouterRight(){
     encoderRight.DebouncedCount();
 }
 
-void CouterLeft(){
+void CounterLeftA(){
+    encoderLeft.DebouncedCount();
+}
+
+void CounterLeftB(){
     encoderLeft.DebouncedCount();
 }
 
@@ -444,23 +453,25 @@ void DebugUltrasound(){
 float speed_right;
 float speed_left;
 
+int counterLattent = 0;
+
 void DebugEncoder(){
 
     Serial.print("Request Speed:");
     Serial.print(speed);
     Serial.print(",");
 
-    Serial.print("Encoder R:");
-    Serial.print(encoderRight.GetRotationSpeed());
-    Serial.print(",");
+    // Serial.print("Encoder R:");
+    // Serial.print(encoderRight.GetRotationSpeed());
+    // Serial.print(",");
 
-    Serial.print("PID Speed R:");
-    Serial.print(speed_right);
-    Serial.print(",");
+    // Serial.print("PID Speed R:");
+    // Serial.print(speed_right);
+    // Serial.print(",");
 
-    Serial.print("Real Speed R:");
-    Serial.print(encoderRight.GetSpeed());
-    Serial.print(",");
+    // Serial.print("Real Speed R:");
+    // Serial.print(encoderRight.GetSpeed());
+    // Serial.print(",");
 
     // Serial.print("Encoder R Counter:");
     // Serial.print(encoderRight.GetCounter());
@@ -478,17 +489,19 @@ void DebugEncoder(){
     Serial.print(encoderLeft.GetRotationSpeed());
     Serial.print(",");
 
+
+
     Serial.print("PID Speed L:");
     Serial.print(speed_left);
     Serial.print(",");
 
     Serial.print("Real Speed L:");
-    Serial.println(encoderLeft.GetSpeed());
-    //Serial.print(",");
+    Serial.print(encoderLeft.GetSpeed());
+    Serial.print(",");
 
-    // Serial.print("Encoder L Counter:");
-    // Serial.print(encoderLeft.GetCounter());
-    // Serial.print(",");
+    Serial.print("Encoder L Counter:");
+    Serial.println(encoderLeft.GetCounter());
+    //Serial.print(",");
 
     // Serial.print("Encoder L Direction:");
     // Serial.print(encoderLeft.GetDirection());
@@ -505,17 +518,19 @@ void DebugEncoder(){
 void loop() {
 
     speed_left = SpeedLeft.Compute(speed,encoderLeft.GetSpeed());
-    speed_right = SpeedRight.Compute(speed,encoderRight.GetSpeed());
+    //speed_right = SpeedRight.Compute(speed,encoderRight.GetSpeed());
     
     //Debug(10000 / 10);
     //DebugPath();
     DebugEncoder();
     //encoderRight.GetRotationSpeed();
     //DriveDebug();
-    motorRight.SetSpeed(speed_right);
+    //motorRight.SetSpeed(speed_right);
     motorLeft.SetSpeed(speed_left);
 
+
     SerialCommande();
+
 
     //positionController.Update(100000 / 10);
 
