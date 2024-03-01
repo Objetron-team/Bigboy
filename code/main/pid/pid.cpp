@@ -26,8 +26,8 @@ float PID::Compute(float target_,float current_){
     target = target_;
     current = current_;
 
-    dt = (millis() - last_time) / 1000;
-    last_time = millis();
+    dt = (micros() - last_time) / 1000000;
+    last_time = micros();
 
     float error = target - current;
     integral += error * dt;
