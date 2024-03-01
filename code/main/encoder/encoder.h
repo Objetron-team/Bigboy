@@ -18,7 +18,7 @@ class Encoder {
         long last_wheel_speed_measurement;
 
         long last_wheel_interrupt;
-        const long last_wheel_interrupt_debounced_micros = 500;
+        const long last_wheel_interrupt_debounced_micros = 80;
 
         int counter;
         int counter_back;
