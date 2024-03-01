@@ -32,11 +32,18 @@ void Encoder::Init(Motor *motor_,int pin_a_,int pin_b_, float wheel_diameter_, i
 
 void Encoder::DebouncedCount(){
 
-    // 2khz to s -> 0.0005s
     if (micros() - last_wheel_interrupt < last_wheel_interrupt_debounced_micros) return;
 
     int MSB = digitalRead(this->pin_a); // Read the A and B encoder pins
     int LSB = digitalRead(this->pin_b);
+
+    if(LSB == LOW){
+        counter++;
+    }else{
+        counter--;
+    }
+
+    /*
 
     if ((MSB == HIGH && LSB == LOW) || (MSB == LOW && LSB == HIGH)) {
         counter++;
@@ -45,6 +52,8 @@ void Encoder::DebouncedCount(){
         counter--;
         this->direction = -1;
     }
+
+    */
 
     last_wheel_interrupt = micros();
 }
@@ -64,6 +73,8 @@ int Encoder::GetDirection(){
 float Encoder::GetRotationSpeed(){
 
     long current_time = millis();
+
+
 
     if (current_time - last_wheel_speed_measurement > measurement_interval_ms){
 
@@ -88,7 +99,9 @@ float Encoder::GetRotationSpeed(){
     }
     rotation_speed /= 5;
 
-    return rotation_speed;
+
+    
+    return rotation_speeds[0];
 }
 
 float Encoder::GetSpeed(){  // in % of max speed
