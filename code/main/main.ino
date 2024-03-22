@@ -10,6 +10,9 @@
     #include "settings/main/motor_def.h";
     #include "settings/main/drive_def.h";
     #include "settings/main/bluetooth_config.h";
+    #include "settings/main/radar.h";
+    #include "settings/main/claw.h";
+    
 #else
     #include "settings/pami/motor_def.h";
     #include "settings/pami/drive_def.h";
@@ -146,7 +149,7 @@ void loop () {
     }
 
     driveControler.Update();
-    myClaw.Update();
+    //myClaw.Update();
 
     //positionControler.Update();
 
