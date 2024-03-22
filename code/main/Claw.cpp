@@ -49,20 +49,28 @@ public:
     }
 
     void Open(){
-
+        /*
         direction = 1;
         open_time = millis();
         RunMotor(direction);
         
+        */
+
+        servo_1->write(100);
+        servo_2->write(100);
     }
 
     void Close(){
 
+        /*
         direction = -1;
         open_time = millis();
         RunMotor(direction);
+        */
 
-    }
+        servo_1->write(0);
+        servo_2->write(0);
+    }   
 
     void Update(){
         current_time = millis();
