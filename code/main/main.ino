@@ -1,8 +1,8 @@
 #include "PIDMotor.cpp";
 #include "DriveControler.cpp";
 #include "PositionControler.cpp";
-#include "BluetoothSerial.h"
-#include "Claw.cpp"
+#include "BluetoothSerial.h";
+#include "Claw.cpp";
 
 #define IS_MAIN false
 
@@ -13,6 +13,9 @@
     #include "settings/main/radar.h";
     #include "settings/main/claw.h";
     
+    Claw myClaw(PIN_CLAW_1, PIN_CLAW_2,CLAW_TIME);
+
+
 #else
     #include "settings/pami/motor_def.h";
     #include "settings/pami/drive_def.h";
@@ -30,7 +33,6 @@ BluetoothSerial SerialBT;
 PIDMotor motorL(MOTOR_L_PIN_1, MOTOR_L_PIN_2, MOTOR_ACCELERATION, MOTOR_MAX_SPEED, MOTOR_MIN_SPEED, MOTOR_THRESHOLD_SPEED, PAMI_DUAL_MODE);
 PIDMotor motorR(MOTOR_R_PIN_1, MOTOR_R_PIN_2, MOTOR_ACCELERATION, MOTOR_MAX_SPEED, MOTOR_MIN_SPEED, MOTOR_THRESHOLD_SPEED, PAMI_DUAL_MODE);
 
-Claw myClaw(PIN_CLAW_1, PIN_CLAW_2,CLAW_TIME);
 
 DriveControler driveControler(&motorL, &motorR);
 PositionControler positionControler(&driveControler);
@@ -40,7 +42,9 @@ void setup () {
     pinMode(TRIGGER_PIN,OUTPUT);
     digitalWrite(ECHO_PIN, LOW);
 
-    myClaw.Init();
+    #if IS_MAIN
+        myClaw.Init();
+    #endif
 
     // Motor setup
     motorL.InitEncoder(ENCODER_L_PIN_A, ENCODER_L_PIN_B, ENCODER_MAX_FREQ, ENCODER_RESOLUTION, WHEEL_DIAMETER);
@@ -91,12 +95,16 @@ void SerialCommande(){
                 break;
             case 'e':
 
-                myClaw.Open();
+                #if IS_MAIN
+                    myClaw.Open();
+                #endif
 
                 break;
             case 'a':
                 
-                myClaw.Close();
+                #if IS_MAIN
+                    myClaw.Close();
+                #endif
 
                 break;
             default:
@@ -119,15 +127,11 @@ void loop () {
         measure = 1000000;
     }
 
-    //if timeout -> measure = 1000000 
-    
     float distance_mm = measure / 2.0 * SOUND_SPEED;
 
     driveControler.SetDistance(global_target);
     driveControler.SetAngle(global_target_2);
 
-
-    /*
     Serial.print("Distance_echo:");
     Serial.print(distance_mm);
     Serial.print(",");
@@ -142,14 +146,12 @@ void loop () {
 
     Serial.print("Target:");
     Serial.println(global_target);
-    */
 
     if(distance_mm < 100){
         driveControler.UrgentStop();
     }
 
     driveControler.Update();
-    //myClaw.Update();
 
     //positionControler.Update();
 
