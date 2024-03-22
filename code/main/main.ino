@@ -1,20 +1,43 @@
 #include "PIDMotor.cpp";
 #include "DriveControler.cpp";
 #include "PositionControler.cpp";
+#include "BluetoothSerial.h"
+#include "Claw.cpp"
 
-#include "settings/pami_motor_def.h";
-#include "settings/pami_drive_def.h";
+#define IS_MAIN false
 
-#define SAMPLE_TIME 5
+#if IS_MAIN
+    #include "settings/main/motor_def.h";
+    #include "settings/main/drive_def.h";
+    #include "settings/main/bluetooth_config.h";
+#else
+    #include "settings/pami/motor_def.h";
+    #include "settings/pami/drive_def.h";
+    #include "settings/pami/bluetooth_config.h";
+    #include "settings/pami/radar.h";
+    #include "settings/pami/claw.h";
+#endif
+
+BluetoothSerial SerialBT;
+
+
+
+#define SAMPLE_TIME 15
 
 PIDMotor motorL(MOTOR_L_PIN_1, MOTOR_L_PIN_2, MOTOR_ACCELERATION, MOTOR_MAX_SPEED, MOTOR_MIN_SPEED, MOTOR_THRESHOLD_SPEED, PAMI_DUAL_MODE);
 PIDMotor motorR(MOTOR_R_PIN_1, MOTOR_R_PIN_2, MOTOR_ACCELERATION, MOTOR_MAX_SPEED, MOTOR_MIN_SPEED, MOTOR_THRESHOLD_SPEED, PAMI_DUAL_MODE);
 
-DriveControler driveControler(&motorL, &motorR);
+Claw myClaw(PIN_CLAW_1, PIN_CLAW_2,CLAW_TIME);
 
+DriveControler driveControler(&motorL, &motorR);
 PositionControler positionControler(&driveControler);
 
 void setup () { 
+
+    pinMode(TRIGGER_PIN,OUTPUT);
+    digitalWrite(ECHO_PIN, LOW);
+
+    myClaw.Init();
 
     // Motor setup
     motorL.InitEncoder(ENCODER_L_PIN_A, ENCODER_L_PIN_B, ENCODER_MAX_FREQ, ENCODER_RESOLUTION, WHEEL_DIAMETER);
@@ -28,37 +51,50 @@ void setup () {
     driveControler.InitPid(DISTANCE_KP, DISTANCE_KI, DISTANCE_KD, ANGLE_KP, ANGLE_KI, ANGLE_KD, SAMPLE_TIME);
 
     Serial.begin ( 115200 );
-}
+    SerialBT.begin(device_name); //Bluetooth device name
 
-bool PID_ENABLE = false;
+}
 
 float global_target = 0;
 float global_target_2 = 0;
 
 void SerialCommande(){
 
-    if(Serial.available() > 0){
+    if(SerialBT.available() > 0){
 
-        String commande = Serial.readStringUntil('\n');
+        String commande = SerialBT.readStringUntil('\n');
         char commande_type = commande.charAt(0);
         
         switch(commande_type){
             case 'z':
                 
-                positionControler.AddPoint({20, 0});
-                positionControler.AddPoint({40, 0});
-                positionControler.AddPoint({40, 20});
-                positionControler.AddPoint({20, 20});
-
+                global_target += 5000;
 
                 break;
             case 's':
+
+                global_target -= 5000;
+
                 break;
             case 'q':
+
+                global_target_2 += 1000;
+
                 break;
             case 'd':
+
+                global_target_2 -= 1000;
+
                 break;
             case 'e':
+
+                myClaw.Open();
+
+                break;
+            case 'a':
+                
+                myClaw.Close();
+
                 break;
             default:
                 break;
@@ -71,23 +107,48 @@ void SerialCommande(){
 void loop () {    
     SerialCommande();
 
-    Serial.print("Task_id:");
-    Serial.print(positionControler.GetCurrentTask()->id);
-    Serial.print(",");
-    Serial.print("Task_error_m:");
-    Serial.print(positionControler.GetCurrentTask()->MoveError(positionControler.GetCurrentPoint()));
-    Serial.print(",");
-    Serial.print("Task_error_r:");
-    Serial.print(positionControler.GetCurrentTask()->RotateError(positionControler.GetCurrentPoint()));
-    Serial.print(",");
-    Serial.print("Task_distance:");
-    Serial.print(positionControler.GetCurrentTask()->GetDistance()  );
-    Serial.print(",");
-    Serial.print("Task_angle:");
-    Serial.println(positionControler.GetCurrentTask()->GetAngle());
+    digitalWrite(TRIGGER_PIN, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(TRIGGER_PIN, LOW);
+    
+    long measure = pulseIn(ECHO_PIN, HIGH, MEASURE_TIMEOUT);
+    if(measure == 0){
+        measure = 1000000;
+    }
+
+    //if timeout -> measure = 1000000 
+    
+    float distance_mm = measure / 2.0 * SOUND_SPEED;
+
+    driveControler.SetDistance(global_target);
+    driveControler.SetAngle(global_target_2);
 
 
-    positionControler.Update();
+    /*
+    Serial.print("Distance_echo:");
+    Serial.print(distance_mm);
+    Serial.print(",");
 
-    delay(SAMPLE_TIME);
+    Serial.print("Distance:");
+    Serial.print(driveControler.GetDistance());
+    Serial.print(",");
+
+    Serial.print("Angle:");
+    Serial.print(driveControler.GetAngle());
+    Serial.print(",");
+
+    Serial.print("Target:");
+    Serial.println(global_target);
+    */
+
+    if(distance_mm < 100){
+        driveControler.UrgentStop();
+    }
+
+    driveControler.Update();
+    myClaw.Update();
+
+    //positionControler.Update();
+
+    delay(5);
 }
