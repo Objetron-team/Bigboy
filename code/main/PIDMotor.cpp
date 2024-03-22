@@ -265,6 +265,7 @@ class PIDMotor{
         void UrgentStop(){
             SetSpeed(0);
             SetSpeed_with_ramp(0);
+            SetMotorSpeendAndDir(0);
         }
 
         double GetPID_target(){
