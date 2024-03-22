@@ -15,13 +15,11 @@
     
     Claw myClaw(PIN_CLAW_1, PIN_CLAW_2,CLAW_TIME);
 
-
 #else
     #include "settings/pami/motor_def.h";
     #include "settings/pami/drive_def.h";
     #include "settings/pami/bluetooth_config.h";
     #include "settings/pami/radar.h";
-    #include "settings/pami/claw.h";
 #endif
 
 BluetoothSerial SerialBT;
