@@ -263,9 +263,9 @@ class PIDMotor{
         }
 
         void UrgentStop(){
+            SetMotorSpeendAndDir(0);
             SetSpeed(0);
             SetSpeed_with_ramp(0);
-            SetMotorSpeendAndDir(0);
         }
 
         double GetPID_target(){
@@ -283,6 +283,7 @@ class PIDMotor{
         double GetCount(){
             return encoder.getCount();
         }
+
 };
 
 #endif
