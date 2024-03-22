@@ -1,0 +1,6 @@
+
+#define TRIGGER_PIN 13
+#define ECHO_PIN 12
+#define MEASURE_TIMEOUT 25000UL
+
+#define SOUND_SPEED  340.0 / 1000
