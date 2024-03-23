@@ -1,6 +1,7 @@
 
 #include "DriveControler.cpp";
 
+// Define the structure of a point.
 struct Point{
     float x;
     float y;
@@ -46,10 +47,11 @@ class Task{
             return angle_to_rotate;
         }
 
-        void Compute(Point current_point){
+        void Compute(Point current_point, float current_angle){
             if(type == MOVE){
                 // Compute the distance to travel
                 distance_to_travel = sqrt(pow(point.x - current_point.x, 2) + pow(point.y - current_point.y, 2));
+                angle_to_rotate = 0;
             }else if(type == ROTATE){
 
                 // Compute the angle to rotate (angle between the current position and the target position) in degree
@@ -57,6 +59,21 @@ class Task{
                 float dy = point.y - current_point.y;
 
                 angle_to_rotate = atan2(dy, dx) * 180 / M_PI;
+
+                // Compute the shortest angle to rotate
+                float angle_diff = angle_to_rotate - current_angle;
+
+                if(angle_diff > 180){
+                    angle_diff -= 360;
+
+                }else if(angle_diff < -180){
+
+                    angle_diff += 360;
+                }
+
+                angle_to_rotate = angle_diff;
+                distance_to_travel = 0;
+
             }
         }
 
@@ -71,9 +88,9 @@ class Task{
         bool IsDone(Point current_point){
 
             if(type == MOVE){
-                return sqrt(pow(point.x - current_point.x, 2) + pow(point.y - current_point.y, 2)) < threshold;
+                return sqrt(pow(point.x - current_point.x, 2) + pow(point.y - current_point.y, 2)) < 5;
             }else if(type == ROTATE){
-                return abs(atan2(point.y - current_point.y, point.x - current_point.x) * 180 / M_PI) < threshold;
+                return abs(atan2(point.y - current_point.y, point.x - current_point.x) * 180 / M_PI) < 5;
             }
 
             return false;
@@ -106,18 +123,51 @@ class Task{
         }
 };
 
+class ValueConverter{
 
+    private:
+        static int pulse_per_turn = 1000;
+        static float wheel_diameter = 0.037; // in meter
+        static float wheel_distance = 0.112 / 2; // in meter
+
+    public:
+
+    static void SetParameters(int pulse_per_turn, float wheel_diameter, float wheel_distance) {
+        ValueConverter::pulse_per_turn = pulse_per_turn;
+        ValueConverter::wheel_diameter = wheel_diameter;
+        ValueConverter::wheel_distance = wheel_distance;
+    }
+
+    static float PulseToDistanceCM(int pulse){
+        return pulse * 100 * wheel_diameter * M_PI / pulse_per_turn;
+    }
+
+    static float PulseToAngle(int pulse){
+        
+    }
+
+    static float AngleToPulse(float angle){
+
+    }
+
+    static float DistanceCMToPulse(float distance){
+        return distance * pulse_per_turn / (wheel_diameter * 100 * M_PI);
+    }
+
+};
 
 class PositionControler{
     private:
         
         int pulse_per_turn = 1000;
-        float wheel_diameter = 3.5; // in meter
+        float wheel_diameter = 0.037; // in meter
         
         DriveControler* driveControler;
 
         Point current_point;
         Point target_point;
+
+        float current_angle = 0;
 
         Task* current_task;
 
@@ -126,9 +176,15 @@ class PositionControler{
         float last_distance = 0;
         float last_angle = 0;
 
+        bool started = false;
+        bool auto_mode = false;
+
     public:
-        PositionControler(DriveControler* driveControler){
+        PositionControler(DriveControler* driveControler, int pulse_per_turn, float wheel_diameter){
             this->driveControler = driveControler;
+
+            this->pulse_per_turn = pulse_per_turn;
+            this->wheel_diameter = wheel_diameter;
 
             current_point.x = 0;
             current_point.y = 0;
@@ -139,18 +195,24 @@ class PositionControler{
 
         void Update(){
 
+            if(!started){
+                return;
+            }
 
-            if(current_task->IsDone(current_point) && current_task->HasNextTask()){
+            if(auto_mode && current_task->IsDone(current_point) && current_task->HasNextTask()){
                 driveControler->UrgentStop();
                 driveControler->Reset();    // Reset all counter to avoid drift and overflows
                 current_task = current_task->GetNextTask();
-                current_task->Compute(current_point);
+                current_task->Compute(current_point, current_angle);
+
+                last_angle = 0;
+                last_distance = 0;
+
             }
 
             if(current_task->GetType() == MOVE){
 
-                float distance_in_pulse = current_task->GetDistance() * pulse_per_turn / (wheel_diameter * M_PI);
-
+                float distance_in_pulse = ValueConverter::DistanceCMToPulse(current_task->GetDistance());
                 driveControler->SetDistance(distance_in_pulse);
                 driveControler->SetAngle(0);
 
@@ -167,14 +229,19 @@ class PositionControler{
             float dt = (micros() - last_update_time) / 1000000.0;
 
             // integrate the position
-            float distance = driveControler->GetDistance() * wheel_diameter * M_PI / pulse_per_turn;
+            float distance = ValueConverter::PulseToDistanceCM(driveControler->GetDistance());
             float angle = driveControler->GetAngle() * 360 / pulse_per_turn;    // in degree
 
-            float d_distance = distance - last_distance;
-            float d_angle = angle - last_angle;
+            float d_distance = distance - last_distance;    // in meter
+            float d_angle = angle - last_angle;             // in degree
 
-            current_point.x += d_distance * cos(angle) * dt;
-            current_point.y += d_angle * sin(angle) * dt;
+            current_angle += d_angle;
+
+            // convert into cm
+            current_point.x += d_distance * cos(current_angle * M_PI / 180) * 100;
+            current_point.y += d_distance * sin(current_angle * M_PI / 180) * 100;
+
+            
 
             last_distance = distance;
             last_angle = angle;
@@ -222,6 +289,53 @@ class PositionControler{
         Point GetCurrentPoint(){
             return current_point;
         }
+
+        float GetCurrentAngle(){
+            return current_angle;
+        }
+
+        void Start(){
+            started = true;
+            last_update_time = micros();
+        }
+
+        void Stop(){
+            started = false;
+        }
+
+        void SetAutoMode(bool auto_mode){
+            this->auto_mode = auto_mode;
+        }
+
+        void NextTask(){
+            if(current_task->HasNextTask()){
+                driveControler->UrgentStop();
+                driveControler->Reset();    // Reset all counter to avoid drift and overflows
+                current_task = current_task->GetNextTask();
+                current_task->Compute(current_point, current_angle);
+
+                last_angle = 0;
+                last_distance = 0;
+            }
+        }
+
+        void Reset(){
+            driveControler->UrgentStop();
+            driveControler->Reset();    // Reset all counter to avoid drift and overflows
+
+            current_point.x = 0;
+            current_point.y = 0;
+
+            current_angle = 0;
+            last_angle = 0;
+            last_distance = 0;
+
+            current_task = new Task(MOVE, {0,0});
+            current_task->id = 0;
+
+            last_update_time = micros();
+        }
+
 
 };
 
