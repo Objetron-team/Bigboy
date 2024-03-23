@@ -35,7 +35,7 @@ PIDMotor motorR(MOTOR_R_PIN_1, MOTOR_R_PIN_2, MOTOR_ACCELERATION, MOTOR_MAX_SPEE
 
 
 DriveControler driveControler(&motorL, &motorR);
-PositionControler positionControler(&driveControler);
+PositionControler positionControler(&driveControler, ENCODER_RESOLUTION, WHEEL_DIAMETER);
 
 void setup () { 
 
@@ -59,6 +59,8 @@ void setup () {
 
     Serial.begin ( 115200 );
     SerialBT.begin(device_name); //Bluetooth device name
+
+    positionControler.SetAutoMode(false);
 
 }
 
@@ -107,6 +109,33 @@ void SerialCommande(){
                 #endif
 
                 break;
+
+            case 'b':
+
+                positionControler.AddPoint({20, 0});
+                positionControler.AddPoint({20, 20});
+                //positionControler.AddPoint({40, 20});
+                //positionControler.AddPoint({20, 20});
+                //positionControler.AddPoint({20, 0});
+
+                break;
+
+            case 'y':
+                    break;
+
+            case 'o':
+                positionControler.Start();
+                break;
+            case 'p':
+                positionControler.Stop();
+                break;
+            case 'n':
+                positionControler.NextTask();
+                break;
+            case 'r':
+                positionControler.Reset();
+                break;
+
             default:
                 break;
         }
@@ -119,32 +148,54 @@ void loop () {
     SerialCommande();
 
     float distance_mm = radar.GetDistance();
-
-    driveControler.SetDistance(global_target);
-    driveControler.SetAngle(global_target_2);
-
-    Serial.print("Distance_echo:");
-    Serial.print(distance_mm);
-    Serial.print(",");
-
-    Serial.print("Distance:");
-    Serial.print(driveControler.GetDistance());
-    Serial.print(",");
-
-    Serial.print("Angle:");
-    Serial.print(driveControler.GetAngle());
-    Serial.print(",");
-
-    Serial.print("Target:");
-    Serial.println(global_target);
-
     if(distance_mm < 100){
         driveControler.UrgentStop();
     }
 
-    driveControler.Update();
+    Task* currentTask = positionControler.GetCurrentTask();
 
-    //positionControler.Update();
+    Serial.print("Tasks:");
+    Serial.print(positionControler.GetNumberOfTask());
+    Serial.print(",");
+
+    Serial.print("Distance_E:");
+    Serial.print(currentTask->MoveError(positionControler.GetCurrentPoint()));
+    Serial.print(",");
+
+    Serial.print("Angle_E:");
+    Serial.print(currentTask->RotateError(positionControler.GetCurrentPoint()));
+    Serial.print(",");
+
+    Serial.print("Distance:");
+    Serial.print(currentTask->GetDistance());
+    Serial.print(",");
+
+    Serial.print("Angle:");
+    Serial.print(currentTask->GetAngle());
+    Serial.print(",");
+
+    Serial.print("X:");
+    Serial.print(positionControler.GetCurrentPoint().x);
+    Serial.print(",");
+
+    Serial.print("Y:");
+    Serial.print(positionControler.GetCurrentPoint().y);
+    Serial.print(",");
+
+    Serial.print("cur_angle:");
+    Serial.print(positionControler.GetCurrentAngle());
+    Serial.print(",");
+
+
+
+    Serial.print("Current:");
+    Serial.println(positionControler.GetTaskId());
+    //Serial.print(",");
+
+    //driveControler.Update();
+
+    positionControler.Update();
+
 
     delay(5);
 }
