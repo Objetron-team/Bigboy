@@ -284,6 +284,10 @@ class PIDMotor{
             return encoder.getCount();
         }
 
+        void SetHardSpeed(float speed){
+            SetMotorSpeendAndDir(speed);
+        }
+
 };
 
 #endif
