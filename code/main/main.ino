@@ -3,6 +3,9 @@
 #include "PositionControler.cpp";
 #include "BluetoothSerial.h";
 #include "Claw.cpp";
+#include "Radar.cpp";
+
+#define SAMPLE_TIME 15
 
 #define IS_MAIN false
 
@@ -24,9 +27,8 @@
 
 BluetoothSerial SerialBT;
 
+Radar radar(TRIGGER_PIN, ECHO_PIN);
 
-
-#define SAMPLE_TIME 15
 
 PIDMotor motorL(MOTOR_L_PIN_1, MOTOR_L_PIN_2, MOTOR_ACCELERATION, MOTOR_MAX_SPEED, MOTOR_MIN_SPEED, MOTOR_THRESHOLD_SPEED, PAMI_DUAL_MODE);
 PIDMotor motorR(MOTOR_R_PIN_1, MOTOR_R_PIN_2, MOTOR_ACCELERATION, MOTOR_MAX_SPEED, MOTOR_MIN_SPEED, MOTOR_THRESHOLD_SPEED, PAMI_DUAL_MODE);
@@ -37,8 +39,8 @@ PositionControler positionControler(&driveControler);
 
 void setup () { 
 
-    pinMode(TRIGGER_PIN,OUTPUT);
-    digitalWrite(ECHO_PIN, LOW);
+    radar.Init();
+
 
     #if IS_MAIN
         myClaw.Init();
@@ -116,16 +118,7 @@ void SerialCommande(){
 void loop () {    
     SerialCommande();
 
-    digitalWrite(TRIGGER_PIN, HIGH);
-    delayMicroseconds(10);
-    digitalWrite(TRIGGER_PIN, LOW);
-    
-    long measure = pulseIn(ECHO_PIN, HIGH, MEASURE_TIMEOUT);
-    if(measure == 0){
-        measure = 1000000;
-    }
-
-    float distance_mm = measure / 2.0 * SOUND_SPEED;
+    float distance_mm = radar.GetDistance();
 
     driveControler.SetDistance(global_target);
     driveControler.SetAngle(global_target_2);
