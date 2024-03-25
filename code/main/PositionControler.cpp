@@ -143,31 +143,19 @@ class ValueConverter{
     }
 
     float PulseToAngle(int pulse){
-        // Tetha = tan-1( dd / L)
 
-        float dd = PulseToDistanceCM(pulse);
+        float arc_length = PulseToDistanceCM(pulse) / 100; // in meter
+        float angle_rad = arc_length / wheel_distance; // in radian
 
-        return atan2(dd, wheel_distance) * 180 / M_PI;
+        return angle_rad * 180 / M_PI;
     }
 
     float AngleToPulse(float angle){
+        // in degree to radian
+        float angle_rad = angle * M_PI / 180;
+        float arc_length = wheel_distance * angle_rad; // in meter (wheel_distance is in meter)
 
-        // dd = L * tan(angle) if angle is small
-
-        float pulse = 0;
-
-        float angle_step = 10;
-        float step_angle_rad = angle_step * M_PI / 180; 
-
-        float pulse_per_step = wheel_distance * tan(step_angle_rad);
-
-        float rest_angle = angle - (int)(angle / angle_step) * angle_step;
-        float rest_angle_rad = rest_angle * M_PI / 180;
-
-        pulse = (int)(angle / angle_step) * pulse_per_step;
-        pulse += wheel_distance * tan(rest_angle_rad);
-
-        return pulse;
+        return DistanceCMToPulse(arc_length * 100);
     }
 
     float DistanceCMToPulse(float distance){
