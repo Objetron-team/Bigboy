@@ -114,15 +114,19 @@ void SerialCommande(){
 
                 positionControler.AddPoint({20, 0});
                 positionControler.AddPoint({20, 20});
-                //positionControler.AddPoint({40, 20});
-                //positionControler.AddPoint({20, 20});
-                //positionControler.AddPoint({20, 0});
+                positionControler.AddPoint({40, 20});
+                positionControler.AddPoint({20, 20});
+                positionControler.AddPoint({20, 0});
+                positionControler.AddPoint({0, 0});
 
                 break;
 
             case 'y':
+                positionControler.SetAutoMode(true);
                     break;
-
+            case 'h':
+                positionControler.SetAutoMode(false);
+                break;
             case 'o':
                 positionControler.Start();
                 break;
