@@ -126,31 +126,51 @@ class Task{
 class ValueConverter{
 
     private:
-        static int pulse_per_turn = 1000;
-        static float wheel_diameter = 0.037; // in meter
-        static float wheel_distance = 0.112 / 2; // in meter
+        int pulse_per_turn = 1000;
+        float wheel_diameter = 1; // in meter
+        float wheel_distance = 1; // in meter
 
     public:
 
-    static void SetParameters(int pulse_per_turn, float wheel_diameter, float wheel_distance) {
-        ValueConverter::pulse_per_turn = pulse_per_turn;
-        ValueConverter::wheel_diameter = wheel_diameter;
-        ValueConverter::wheel_distance = wheel_distance;
+    ValueConverter(int pulse_per_turn, float wheel_diameter, float wheel_distance) {
+        this->pulse_per_turn = pulse_per_turn;
+        this->wheel_diameter = wheel_diameter;
+        this->wheel_distance = wheel_distance;
     }
 
-    static float PulseToDistanceCM(int pulse){
+    float PulseToDistanceCM(int pulse){
         return pulse * 100 * wheel_diameter * M_PI / pulse_per_turn;
     }
 
-    static float PulseToAngle(int pulse){
-        
+    float PulseToAngle(int pulse){
+        // Tetha = tan-1( dd / L)
+
+        float dd = PulseToDistanceCM(pulse);
+
+        return atan2(dd, wheel_distance) * 180 / M_PI;
     }
 
-    static float AngleToPulse(float angle){
+    float AngleToPulse(float angle){
 
+        // dd = L * tan(angle) if angle is small
+
+        float pulse = 0;
+
+        float angle_step = 10;
+        float step_angle_rad = angle_step * M_PI / 180; 
+
+        float pulse_per_step = wheel_distance * tan(step_angle_rad);
+
+        float rest_angle = angle - (int)(angle / angle_step) * angle_step;
+        float rest_angle_rad = rest_angle * M_PI / 180;
+
+        pulse = (int)(angle / angle_step) * pulse_per_step;
+        pulse += wheel_distance * tan(rest_angle_rad);
+
+        return pulse;
     }
 
-    static float DistanceCMToPulse(float distance){
+    float DistanceCMToPulse(float distance){
         return distance * pulse_per_turn / (wheel_diameter * 100 * M_PI);
     }
 
@@ -158,10 +178,6 @@ class ValueConverter{
 
 class PositionControler{
     private:
-        
-        int pulse_per_turn = 1000;
-        float wheel_diameter = 0.037; // in meter
-        
         DriveControler* driveControler;
 
         Point current_point;
@@ -179,12 +195,13 @@ class PositionControler{
         bool started = false;
         bool auto_mode = false;
 
+        ValueConverter* valueConverter;
+
     public:
-        PositionControler(DriveControler* driveControler, int pulse_per_turn, float wheel_diameter){
+        PositionControler(DriveControler* driveControler, int pulse_per_turn, float wheel_diameter, float wheel_distance){
             this->driveControler = driveControler;
 
-            this->pulse_per_turn = pulse_per_turn;
-            this->wheel_diameter = wheel_diameter;
+            valueConverter = new ValueConverter(pulse_per_turn, wheel_diameter, wheel_distance);
 
             current_point.x = 0;
             current_point.y = 0;
@@ -212,15 +229,14 @@ class PositionControler{
 
             if(current_task->GetType() == MOVE){
 
-                float distance_in_pulse = ValueConverter::DistanceCMToPulse(current_task->GetDistance());
+                float distance_in_pulse = valueConverter->DistanceCMToPulse(current_task->GetDistance());
                 driveControler->SetDistance(distance_in_pulse);
                 driveControler->SetAngle(0);
 
 
             }else if(current_task->GetType() == ROTATE){
 
-                float angle_in_pulse = current_task->GetAngle() * pulse_per_turn / 360;
-
+                float angle_in_pulse = valueConverter->AngleToPulse(current_task->GetAngle());
                 driveControler->SetDistance(0);
                 driveControler->SetAngle(angle_in_pulse);
 
@@ -229,19 +245,17 @@ class PositionControler{
             float dt = (micros() - last_update_time) / 1000000.0;
 
             // integrate the position
-            float distance = ValueConverter::PulseToDistanceCM(driveControler->GetDistance());
-            float angle = driveControler->GetAngle() * 360 / pulse_per_turn;    // in degree
+            float distance = valueConverter->PulseToDistanceCM(driveControler->GetDistance());  // in centimeter
+            float angle = valueConverter->PulseToAngle(driveControler->GetAngle());             // in degree
 
-            float d_distance = distance - last_distance;    // in meter
+            float d_distance = distance - last_distance;    // in centimeter
             float d_angle = angle - last_angle;             // in degree
 
             current_angle += d_angle;
 
             // convert into cm
-            current_point.x += d_distance * cos(current_angle * M_PI / 180) * 100;
-            current_point.y += d_distance * sin(current_angle * M_PI / 180) * 100;
-
-            
+            current_point.x += d_distance * cos(current_angle * M_PI / 180);
+            current_point.y += d_distance * sin(current_angle * M_PI / 180);
 
             last_distance = distance;
             last_angle = angle;
