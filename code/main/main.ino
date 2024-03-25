@@ -35,7 +35,7 @@ PIDMotor motorR(MOTOR_R_PIN_1, MOTOR_R_PIN_2, MOTOR_ACCELERATION, MOTOR_MAX_SPEE
 
 
 DriveControler driveControler(&motorL, &motorR);
-PositionControler positionControler(&driveControler, ENCODER_RESOLUTION, WHEEL_DIAMETER);
+PositionControler positionControler(&driveControler, ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
 
 void setup () { 
 
