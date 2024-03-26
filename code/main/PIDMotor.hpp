@@ -18,6 +18,7 @@
                 ! speed_pin is an analogWrite pin
 */
 
+#pragma once
 
 #include <Arduino.h>;
 #include <ESP32Encoder.h>
@@ -25,9 +26,6 @@
 
 #define NBR_OF_SPEED_MEASUREMENTS 10
 
-#ifndef PIDMotor_class
-
-#define PIDMotor_class
 
 class PIDMotor{
     private:
@@ -289,5 +287,3 @@ class PIDMotor{
         }
 
 };
-
-#endif

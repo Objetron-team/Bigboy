@@ -12,12 +12,10 @@
 
 */
 
+#pragma once
+
 #include <PID_v1.h>
 #include "PIDMotor.hpp"
-
-#ifndef DriveControler_class
-
-#define DriveControler_class
 
 class DriveControler{
     private:
@@ -121,5 +119,3 @@ class DriveControler{
             motorR->UrgentStop();
         }
 };
-
-#endif

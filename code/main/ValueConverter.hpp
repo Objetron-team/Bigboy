@@ -1,7 +1,4 @@
-
-#ifndef ValueConverter_hpp
-
-#define ValueConverter_hpp
+#pragma once
 
 class ValueConverter{
 
@@ -43,5 +40,3 @@ class ValueConverter{
     }
 
 };
-
-#endif
