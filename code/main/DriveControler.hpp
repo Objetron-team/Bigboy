@@ -1,5 +1,5 @@
 /*
-    DriveControler.cpp - Library for controling a robot with two motors
+    DriveControler.hpp - Library for controling a robot with two motors
 
 
         Control the robot with two motors using PID controler for distance and angle.
@@ -13,7 +13,7 @@
 */
 
 #include <PID_v1.h>
-#include "PIDMotor.cpp"
+#include "PIDMotor.hpp"
 
 #ifndef DriveControler_class
 
