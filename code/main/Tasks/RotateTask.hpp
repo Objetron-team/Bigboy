@@ -2,7 +2,7 @@
 
 #include "BasicTask.hpp"
 
-#define ANGLE_THRESHOLD 1;
+#define ANGLE_THRESHOLD 5;
 
 class RotateTask : public BasicTask{
 
@@ -69,5 +69,32 @@ public:
         return abs(angle_diff) < ANGLE_THRESHOLD;
 
     }
+
+    void Debug() override {
+        Serial.print("Target_angle:");
+        Serial.print(target_angle_degree);
+        Serial.print(",");
+        Serial.print("Target_angle_pulse:");
+        Serial.print(target_angle_pulse);
+        Serial.print(",");
+        Serial.print("Current_angle_pulse:");
+        Serial.print(driveControler->GetAngle());
+        Serial.print(",");
+
+        float current_angle = positionControler->GetCurrentAngle(); // in degree
+
+        float angle_diff = target_angle_degree - current_angle;
+
+        if(angle_diff > 180){
+            angle_diff -= 360;
+        }else if(angle_diff < -180){
+            angle_diff += 360;
+        }
+
+        Serial.print("Error_angle:");
+        Serial.println(angle_diff);
+    }
+
+
 
 };

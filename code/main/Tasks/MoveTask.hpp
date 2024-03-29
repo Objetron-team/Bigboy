@@ -3,7 +3,7 @@
 #include "BasicTask.hpp"
 
 
-#define DISTANCE_THRESHOLD 0.5;
+#define DISTANCE_THRESHOLD 1;
 
 
 class MoveTask : public BasicTask{
@@ -48,6 +48,33 @@ public:
         float distance_to_target = sqrt(pow(target_position.x - current_position.x, 2) + pow(target_position.y - current_position.y, 2));
 
         return distance_to_target < DISTANCE_THRESHOLD;
+    }
+
+    void Debug() override {
+        Serial.print("Target_x:");
+        Serial.print(target_position.x);
+        Serial.print(",");
+        Serial.print("Target_y:");
+        Serial.print(target_position.y);
+        Serial.print(",");
+
+        Point current_position = positionControler->GetCurrentPoint();
+        float error =  sqrt(pow(target_position.x - current_position.x, 2) + pow(target_position.y - current_position.y, 2));
+
+        Serial.print("Distance_to_travel_cm:");
+        Serial.print(distance_to_target_cm);
+        Serial.print(",");
+        Serial.print("Distance_to_travel_pulse:");
+        Serial.print(distance_to_target_pulse);
+        Serial.print(",");
+        Serial.print("Current_distance_pulse:");
+        Serial.print(driveControler->GetDistance());
+        Serial.print(",");
+
+
+        Serial.print("Error_cm:");
+        Serial.println(error);
+
     }
 
 };
