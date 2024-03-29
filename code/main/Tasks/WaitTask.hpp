@@ -4,7 +4,7 @@
 
 
 #define WAIT_TIME_MS 500
-#define DO_STOP_ROBOT false
+#define DO_STOP_ROBOT true
 
 class WaitTask : public BasicTask{
 
