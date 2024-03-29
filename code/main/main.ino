@@ -5,6 +5,7 @@
 #include "BluetoothSerial.h"
 #include "Claw.hpp"
 #include "Radar.hpp"
+#include "PositionTaskBuilder.hpp"
 
 #define SAMPLE_TIME 15
 
@@ -30,7 +31,6 @@ BluetoothSerial SerialBT;
 
 Radar radar(TRIGGER_PIN, ECHO_PIN);
 
-
 PIDMotor motorL(MOTOR_L_PIN_1, MOTOR_L_PIN_2, MOTOR_ACCELERATION, MOTOR_MAX_SPEED, MOTOR_MIN_SPEED, MOTOR_THRESHOLD_SPEED, PAMI_DUAL_MODE);
 PIDMotor motorR(MOTOR_R_PIN_1, MOTOR_R_PIN_2, MOTOR_ACCELERATION, MOTOR_MAX_SPEED, MOTOR_MIN_SPEED, MOTOR_THRESHOLD_SPEED, PAMI_DUAL_MODE);
 
@@ -40,6 +40,8 @@ DriveControler driveControler(&motorL, &motorR);
 PositionControler positionControler(&driveControler, ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
 
 TaskControler taskControler(&positionControler,&driveControler, &valueConverter);
+
+PositionTaskBuilder positionTaskBuilder(&positionControler, &driveControler, &valueConverter);
 
 void setup () { 
 
@@ -99,25 +101,39 @@ void SerialCommande(){
                 global_target_2 -= 1000;
 
                 break;
-            case 'e':
+            // case 'e':
 
-                #if IS_MAIN
-                    myClaw.Open();
-                #endif
+            //     #if IS_MAIN
+            //         myClaw.Open();
+            //     #endif
 
-                break;
-            case 'a':
+            //     break;
+            // case 'a':
                 
-                #if IS_MAIN
-                    myClaw.Close();
-                #endif
+            //     #if IS_MAIN
+            //         myClaw.Close();
+            //     #endif
 
-                break;
+            //     break;
 
             case 'b':
+                {
+                    // create Points array
+                    Point points[7] = {
+                        {0,0},
+                        {20,0},
+                        {40,0},
+                        {40,20},
+                        {20,20},
+                        {0,20},
+                        {0,0}
+                    };
 
-                break;
+                    BasicTask* task = positionTaskBuilder.CreateTasksFromPoints(points,7);
 
+                    taskControler.AddTask(task);
+                    break;
+                }
             case 'y':
                 taskControler.SetAutoMode(true);
                     break;
@@ -153,30 +169,8 @@ void loop () {
         driveControler.UrgentStop();
     }
 
-    Serial.print("Tasks:");
-    Serial.print(taskControler.GetNumberOfTask());
-    Serial.print(",");
-
-    Serial.print("X:");
-    Serial.print(positionControler.GetCurrentPoint().x);
-    Serial.print(",");
-
-    Serial.print("Y:");
-    Serial.print(positionControler.GetCurrentPoint().y);
-    Serial.print(",");
-
-    Serial.print("cur_angle:");
-    Serial.print(positionControler.GetCurrentAngle());
-    Serial.print(",");
-
-    Serial.print("Current:");
-    Serial.println(taskControler.GetTaskId());
-    //Serial.print(",");
-
-    //driveControler.Update();
-
     taskControler.Update();
-
+    taskControler.Debug();
 
     delay(5);
 }
