@@ -20,6 +20,8 @@ public:
 
     virtual bool IsDone();
 
+    virtual void Debug();
+
     
     void AddTask(BasicTask* next_task){
         
@@ -52,4 +54,5 @@ public:
         return task;
     }
 
+    
 };
