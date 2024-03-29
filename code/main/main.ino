@@ -121,11 +121,11 @@ void SerialCommande(){
                     // create Points array
                     Point points[7] = {
                         {0,0},
-                        {20,0},
                         {40,0},
-                        {40,20},
-                        {20,20},
-                        {20,0},
+                        {80,0},
+                        {80,40},
+                        {40,40},
+                        {40,0},
                         {0,0}
                     };
 
@@ -170,7 +170,7 @@ void loop () {
     }
 
     taskControler.Update();
-    taskControler.Debug();
+    //taskControler.Debug();
 
     //driveControler.Debug();
 
