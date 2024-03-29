@@ -3,7 +3,7 @@
 #include "BasicTask.hpp"
 
 
-#define DISTANCE_THRESHOLD 1
+#define DISTANCE_THRESHOLD 2
 
 
 class MoveTask : public BasicTask{
