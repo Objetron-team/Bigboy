@@ -1,9 +1,10 @@
-#include "PIDMotor.cpp";
-#include "DriveControler.cpp";
-#include "PositionControler.cpp";
-#include "BluetoothSerial.h";
-#include "Claw.cpp";
-#include "Radar.cpp";
+#include "PIDMotor.hpp"
+#include "DriveControler.hpp"
+#include "PositionControler.hpp"
+#include "TaskControler.hpp"
+#include "BluetoothSerial.h"
+#include "Claw.hpp"
+#include "Radar.hpp"
 
 #define SAMPLE_TIME 15
 
@@ -33,9 +34,12 @@ Radar radar(TRIGGER_PIN, ECHO_PIN);
 PIDMotor motorL(MOTOR_L_PIN_1, MOTOR_L_PIN_2, MOTOR_ACCELERATION, MOTOR_MAX_SPEED, MOTOR_MIN_SPEED, MOTOR_THRESHOLD_SPEED, PAMI_DUAL_MODE);
 PIDMotor motorR(MOTOR_R_PIN_1, MOTOR_R_PIN_2, MOTOR_ACCELERATION, MOTOR_MAX_SPEED, MOTOR_MIN_SPEED, MOTOR_THRESHOLD_SPEED, PAMI_DUAL_MODE);
 
+ValueConverter valueConverter(ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
 
 DriveControler driveControler(&motorL, &motorR);
 PositionControler positionControler(&driveControler, ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
+
+TaskControler taskControler(&positionControler,&driveControler, &valueConverter);
 
 void setup () { 
 
@@ -60,7 +64,7 @@ void setup () {
     Serial.begin ( 115200 );
     SerialBT.begin(device_name); //Bluetooth device name
 
-    positionControler.SetAutoMode(false);
+    taskControler.SetAutoMode(false);
 
 }
 
@@ -112,32 +116,25 @@ void SerialCommande(){
 
             case 'b':
 
-                positionControler.AddPoint({20, 0});
-                positionControler.AddPoint({20, 20});
-                positionControler.AddPoint({40, 20});
-                positionControler.AddPoint({20, 20});
-                positionControler.AddPoint({20, 0});
-                positionControler.AddPoint({0, 0});
-
                 break;
 
             case 'y':
-                positionControler.SetAutoMode(true);
+                taskControler.SetAutoMode(true);
                     break;
             case 'h':
-                positionControler.SetAutoMode(false);
+                taskControler.SetAutoMode(false);
                 break;
             case 'o':
-                positionControler.Start();
+                taskControler.Start();
                 break;
             case 'p':
-                positionControler.Stop();
+                taskControler.Stop();
                 break;
             case 'n':
-                positionControler.NextTask();
+                taskControler.NextTask();
                 break;
             case 'r':
-                positionControler.Reset();
+                taskControler.Reset();
                 break;
 
             default:
@@ -156,26 +153,8 @@ void loop () {
         driveControler.UrgentStop();
     }
 
-    Task* currentTask = positionControler.GetCurrentTask();
-
     Serial.print("Tasks:");
-    Serial.print(positionControler.GetNumberOfTask());
-    Serial.print(",");
-
-    Serial.print("Distance_E:");
-    Serial.print(currentTask->MoveError(positionControler.GetCurrentPoint()));
-    Serial.print(",");
-
-    Serial.print("Angle_E:");
-    Serial.print(currentTask->RotateError(positionControler.GetCurrentPoint()));
-    Serial.print(",");
-
-    Serial.print("Distance:");
-    Serial.print(currentTask->GetDistance());
-    Serial.print(",");
-
-    Serial.print("Angle:");
-    Serial.print(currentTask->GetAngle());
+    Serial.print(taskControler.GetNumberOfTask());
     Serial.print(",");
 
     Serial.print("X:");
@@ -190,15 +169,13 @@ void loop () {
     Serial.print(positionControler.GetCurrentAngle());
     Serial.print(",");
 
-
-
     Serial.print("Current:");
-    Serial.println(positionControler.GetTaskId());
+    Serial.println(taskControler.GetTaskId());
     //Serial.print(",");
 
     //driveControler.Update();
 
-    positionControler.Update();
+    taskControler.Update();
 
 
     delay(5);
