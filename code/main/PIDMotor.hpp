@@ -154,14 +154,12 @@ class PIDMotor{
             this->last_update_time = millis();
             pinMode(pin_direction, OUTPUT);
             pinMode(pin_speed, OUTPUT);
-                }
         }
+        
 
         void InitEncoder(int pinA, int pinB, int max_frequency, int pulses_per_turn, double wheel_diameter){
             encoder.attachFullQuad(pinA, pinB);
             encoder.setCount(0);
-            pinMode(MOTOR_R_PIN_1, OUTPUT);
-+           pinMode(25, OUTPUT);
 
             this->MAX_FREQUENCY = max_frequency;
             this->PULSES_PER_TURN = pulses_per_turn;
