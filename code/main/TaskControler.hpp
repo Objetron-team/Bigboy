@@ -8,7 +8,7 @@
 #include "Tasks/BasicTask.hpp"
 #include "Tasks/MoveTask.hpp"
 #include "Tasks/RotateTask.hpp"
-
+#include "Tasks/WaitTask.hpp"
 
 class TaskControler{
 private:
@@ -100,6 +100,9 @@ public:
     }
 
     void Reset(){
+
+        Stop();
+
         positionControler->Reset();
 
         current_task = new MoveTask(positionControler, driveControler, valueConverter, {0,0});

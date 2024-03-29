@@ -8,7 +8,7 @@
 #include "Tasks/BasicTask.hpp"
 #include "Tasks/MoveTask.hpp"
 #include "Tasks/RotateTask.hpp"
-
+#include "Tasks/WaitTask.hpp"
 
 class PositionTaskBuilder{
 private:
@@ -40,11 +40,16 @@ public:
         for(int i = 1; i < size; i++){
             Point target = points[i];
 
+            WaitTask* wait_task_1 = new WaitTask(positionControler, driveControler, valueConverter);
+            WaitTask* wait_task_2 = new WaitTask(positionControler, driveControler, valueConverter);
+
             RotateTask* rotate_task = CreateRotateTask(target);
             MoveTask* move_task = CreateMoveTask(target);
 
             first_task->AddTask(rotate_task);
-            rotate_task->AddTask(move_task);
+            first_task->AddTask(wait_task_1);
+            first_task->AddTask(move_task);
+            first_task->AddTask(wait_task_2);
         }
 
         return first_task;
