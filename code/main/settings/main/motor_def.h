@@ -26,9 +26,9 @@
 #define ENCODER_R_PIN_A 19
 #define ENCODER_R_PIN_B 18
 
-#define ENCODER_RESOLUTION 100  // pulses per revolution
-#define ENCODER_MAX_FREQ 6400   // Hz
-#define WHEEL_DIAMETER 0.035    // meters    
+#define ENCODER_RESOLUTION 8400  // pulses per revolution
+#define ENCODER_MAX_FREQ 12200   // Hz
+#define WHEEL_DIAMETER 0.077    // meters    
 
 // PID definition
 
