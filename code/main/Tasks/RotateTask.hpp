@@ -13,11 +13,11 @@ private:
 
     Point target_position;
 
-    float target_angle_degree = 0;
-    float target_angle_pulse = 0;
+    double target_angle_degree = 0;
+    double target_angle_pulse = 0;
 
-    float distance_to_target_cm = 0;
-    float distance_to_target_pulse = 0;
+    double distance_to_target_cm = 0;
+    double distance_to_target_pulse = 0;
 
 public:
     RotateTask(PositionControler* positionControler,DriveControler* driveControler ,ValueConverter* valueConverter ,Point target_position) {
@@ -36,13 +36,13 @@ public:
     }
 
     void Compute() override {
-        float current_angle = positionControler->GetCurrentAngle(); // in degree
+        double current_angle = positionControler->GetCurrentAngle(); // in degree
         
         Point current_position = positionControler->GetCurrentPoint();
         
-        float angle_between_points = atan2(target_position.y - current_position.y, target_position.x - current_position.x) * 180 / M_PI;
+        double angle_between_points = atan2(target_position.y - current_position.y, target_position.x - current_position.x) * 180 / M_PI;
 
-        float angle_to_rotate = angle_between_points - current_angle;
+        double angle_to_rotate = angle_between_points - current_angle;
 
         if(angle_to_rotate > 180){
             angle_to_rotate -= 360;
@@ -56,9 +56,9 @@ public:
 
     bool IsDone() override {
 
-        float current_angle = positionControler->GetCurrentAngle(); // in degree
+        double current_angle = positionControler->GetCurrentAngle(); // in degree
 
-        float angle_diff = target_angle_degree - current_angle;
+        double angle_diff = target_angle_degree - current_angle;
 
         if(angle_diff > 180){
             angle_diff -= 360;
@@ -81,9 +81,9 @@ public:
         Serial.print(driveControler->GetAngle());
         Serial.print(",");
 
-        float current_angle = positionControler->GetCurrentAngle(); // in degree
+        double current_angle = positionControler->GetCurrentAngle(); // in degree
 
-        float angle_diff = target_angle_degree - current_angle;
+        double angle_diff = target_angle_degree - current_angle;
 
         if(angle_diff > 180){
             angle_diff -= 360;

@@ -37,7 +37,7 @@ class DriveControler{
             this->motorR = motorR;
         }
 
-        void InitPid(float kp_distance, float ki_distance, float kd_distance, float kp_angle, float ki_angle, float kd_angle, float sample_time){
+        void InitPid(double kp_distance, double ki_distance, double kd_distance, double kp_angle, double ki_angle, double kd_angle, double sample_time){
             pid_distance = new PID(&input_distance, &output_distance, &setpoint_distance, kp_distance, ki_distance, kd_distance, DIRECT);
             pid_angle    = new PID(&input_angle, &output_angle, &setpoint_angle, kp_angle, ki_angle, kd_angle, DIRECT);
 
@@ -51,12 +51,14 @@ class DriveControler{
             pid_angle->SetSampleTime(sample_time);
         }
 
-        void SetAngle(float angle){
-            setpoint_angle = angle; // in pulse
+        void SetAngle(double angle){
+            //convert double to double
+            setpoint_angle = (double)angle; // in pulse
         }
 
-        void SetDistance(float distance){
-            setpoint_distance = distance;   // in pulse
+        void SetDistance(double distance){
+            //convert double to double
+            setpoint_distance = (double)distance; // in pulse
         }
 
         void Update(){
@@ -74,12 +76,12 @@ class DriveControler{
             motorR->Update();
         }
 
-        float GetDistance(){
-            return (float)input_distance;
+        double GetDistance(){
+            return (double)input_distance;
         }
 
-        float GetAngle(){
-            return (float)input_angle;
+        double GetAngle(){
+            return (double)input_angle;
         }
 
         double GetPID_distance_output(){
@@ -98,9 +100,6 @@ class DriveControler{
             pid_distance->SetMode(MANUAL);
             pid_angle->SetMode(MANUAL);
 
-            motorL->Reset();
-            motorR->Reset();
-
             setpoint_distance = 0;
             setpoint_angle = 0;
 
@@ -110,6 +109,9 @@ class DriveControler{
             output_distance = 0;
             output_angle = 0;
 
+            motorL->Reset();
+            motorR->Reset();
+
             pid_distance->SetMode(AUTOMATIC);
             pid_angle->SetMode(AUTOMATIC);
         }
@@ -117,5 +119,31 @@ class DriveControler{
         void UrgentStop(){
             motorL->UrgentStop();
             motorR->UrgentStop();
+        }
+
+        void Debug(){
+
+            Serial.print("Distance_target:");
+            Serial.print(setpoint_distance);
+            Serial.print(",");
+
+            Serial.print("Angle_target:");
+            Serial.print(setpoint_angle);
+            Serial.print(",");
+
+            Serial.print("Distance:");
+            Serial.print(input_distance);
+            Serial.print(",");
+
+            Serial.print("Angle:");
+            Serial.print(input_angle);
+            Serial.print(",");
+
+            Serial.print("Distance_output:");
+            Serial.print(output_distance);
+            Serial.print(",");
+
+            Serial.print("Angle_output:");
+            Serial.println(output_angle);
         }
 };

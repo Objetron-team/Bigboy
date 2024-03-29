@@ -15,8 +15,8 @@ private:
 
     Point target_position;
 
-    float distance_to_target_cm = 0;
-    float distance_to_target_pulse = 0;
+    double distance_to_target_cm = 0;
+    double distance_to_target_pulse = 0;
 
 public:
 
@@ -45,7 +45,7 @@ public:
         // check if the current position is close enough to the target position
         Point current_position = positionControler->GetCurrentPoint();
 
-        float distance_to_target = sqrt(pow(target_position.x - current_position.x, 2) + pow(target_position.y - current_position.y, 2));
+        double distance_to_target = sqrt(pow(target_position.x - current_position.x, 2) + pow(target_position.y - current_position.y, 2));
 
         return distance_to_target < DISTANCE_THRESHOLD;
     }
@@ -59,7 +59,7 @@ public:
         Serial.print(",");
 
         Point current_position = positionControler->GetCurrentPoint();
-        float error =  sqrt(pow(target_position.x - current_position.x, 2) + pow(target_position.y - current_position.y, 2));
+        double error =  sqrt(pow(target_position.x - current_position.x, 2) + pow(target_position.y - current_position.y, 2));
 
         Serial.print("Distance_to_travel_cm:");
         Serial.print(distance_to_target_cm);

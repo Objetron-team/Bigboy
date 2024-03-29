@@ -25,7 +25,7 @@ public:
     }
 
 
-    float GetDistance(){
+    double GetDistance(){
 
         digitalWrite(trigger_pin, HIGH);
         delayMicroseconds(10);
@@ -36,7 +36,7 @@ public:
             return OUT_OF_RANGE;
         }
 
-        float distance_mm = measure / 2.0 * SOUND_SPEED;
+        double distance_mm = measure / 2.0 * SOUND_SPEED;
         return distance_mm;
     }
 };

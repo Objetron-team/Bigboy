@@ -70,8 +70,8 @@ void setup () {
 
 }
 
-float global_target = 0;
-float global_target_2 = 0;
+double global_target = 0;
+double global_target_2 = 0;
 
 void SerialCommande(){
 
@@ -164,13 +164,15 @@ void SerialCommande(){
 void loop () {    
     SerialCommande();
 
-    float distance_mm = radar.GetDistance();
+    double distance_mm = radar.GetDistance();
     if(distance_mm < 100){
         driveControler.UrgentStop();
     }
 
     taskControler.Update();
     taskControler.Debug();
+
+    //driveControler.Debug();
 
     delay(5);
 }

@@ -38,25 +38,25 @@ class PIDMotor{
         int pin_speed;
 
         //Motor parameters
-        float current_speed;
-        float threshold_speed;
-        float min_speed;    
-        float max_speed;
+        double current_speed;
+        double threshold_speed;
+        double min_speed;    
+        double max_speed;
 
         //Motor timing
         long last_update_time;
-        float max_acceleration; //in power/seconde -> 0.1 is 10% increase per seconde
+        double max_acceleration; //in power/seconde -> 0.1 is 10% increase per seconde
 
         //Encoder
         ESP32Encoder encoder;
 
         int MAX_FREQUENCY = 1000; // in Hz
         int PULSES_PER_TURN = 1;
-        float WHEEL_DIAMETER = 1;   // in meter
+        double WHEEL_DIAMETER = 1;   // in meter
 
-        float VFilt = 0;
-        float VPrev = 0;
-        float speed_measurements[NBR_OF_SPEED_MEASUREMENTS];
+        double VFilt = 0;
+        double VPrev = 0;
+        double speed_measurements[NBR_OF_SPEED_MEASUREMENTS];
 
         long last_encoder_time;
         long last_encoder_value;
@@ -67,9 +67,9 @@ class PIDMotor{
         double setpoint, input, output;
 
 
-        void SetSpeed_with_ramp(float target){
+        void SetSpeed_with_ramp(double target){
                 //Increase or decrease the current speed to reach the target speed by the max acceleration
-            float delta_time = (millis() - last_update_time) / 1000.0;
+            double delta_time = (millis() - last_update_time) / 1000.0;
             last_update_time = millis();
 
             int target_sign = abs(target) / target;
@@ -83,7 +83,7 @@ class PIDMotor{
             }
 
 
-            float delta_speed = delta_time * max_acceleration;
+            double delta_speed = delta_time * max_acceleration;
 
             if(target > current_speed){
                 current_speed += delta_speed;
@@ -101,14 +101,14 @@ class PIDMotor{
             SetMotorSpeendAndDir(current_speed);
         }
 
-        void SetMotorSpeendAndDir(float speed){
+        void SetMotorSpeendAndDir(double speed){
 
             if(abs(speed) < min_speed && speed != 0){
                 speed = speed / abs(speed) * min_speed;
             }
 
             //Convert the speed in % to a value between 0 and 255
-            float value = abs(speed) * 255 / 100.0;
+            double value = abs(speed) * 255 / 100.0;
 
             if(dual_input){
 
@@ -142,7 +142,7 @@ class PIDMotor{
 
     public:
 
-        PIDMotor(int pin_direction,int pin_speed,float max_acceleration, float max_speed, float min_speed,float threshold_speed, bool dual_input){
+        PIDMotor(int pin_direction,int pin_speed,double max_acceleration, double max_speed, double min_speed,double threshold_speed, bool dual_input){
             this->pin_direction = pin_direction;
             this->pin_speed = pin_speed;
             this->max_acceleration = max_acceleration;
@@ -154,7 +154,7 @@ class PIDMotor{
             this->last_update_time = millis();
         }
 
-        void InitEncoder(int pinA, int pinB, int max_frequency, int pulses_per_turn, float wheel_diameter){
+        void InitEncoder(int pinA, int pinB, int max_frequency, int pulses_per_turn, double wheel_diameter){
             encoder.attachFullQuad(pinA, pinB);
             encoder.setCount(0);
 
@@ -163,18 +163,18 @@ class PIDMotor{
             this->WHEEL_DIAMETER = wheel_diameter;
         }
 
-        void InitPID(float Kp, float Ki, float Kd, float sample_time_ms){
+        void InitPID(double Kp, double Ki, double Kd, double sample_time_ms){
             pid = new PID(&input, &output, &setpoint, Kp, Ki, Kd, DIRECT);
             pid->SetMode(AUTOMATIC);
             pid->SetOutputLimits(-100, 100);
             pid->SetSampleTime(sample_time_ms);
         }
 
-        void SetSpeed(float speed){
+        void SetSpeed(double speed){
             setpoint = speed;   //Set the setpoint of the PID, in % of the max speed
         }
 
-        float GetSpeed(){
+        double GetSpeed(){
             long currentMicros = micros();
             long currentCount = encoder.getCount();
 
@@ -188,7 +188,7 @@ class PIDMotor{
                 return 0;
             }
 
-            float speed = deltaCount * 1000000 / deltaMicros;
+            double speed = deltaCount * 1000000 / deltaMicros;
 
             // add low pass filter 25hz before adding to the array
             this->VFilt = 0.854 * this->VFilt + 0.0728 * speed + 0.0728 * this->VPrev;
@@ -200,7 +200,7 @@ class PIDMotor{
 
             speed_measurements[NBR_OF_SPEED_MEASUREMENTS - 1] = VFilt;
 
-            float sum = 0;
+            double sum = 0;
             for (int i = 0; i < NBR_OF_SPEED_MEASUREMENTS; i++) {
                 sum += speed_measurements[i];
             }
@@ -208,16 +208,16 @@ class PIDMotor{
             return sum / NBR_OF_SPEED_MEASUREMENTS;
         }
 
-        float GetSpeedRelative(){
+        double GetSpeedRelative(){
 
-            float absolute_relative_speed = GetSpeed() / MAX_FREQUENCY * 100;
+            double absolute_relative_speed = GetSpeed() / MAX_FREQUENCY * 100;
 
-            float real_relative_speed = absolute_relative_speed / (max_speed / 100);
+            double real_relative_speed = absolute_relative_speed / (max_speed / 100);
 
             return real_relative_speed;
         }
 
-        float GetSpeedMeterPerSeconde(){
+        double GetSpeedMeterPerSeconde(){
             return GetSpeed() * WHEEL_DIAMETER * PI / PULSES_PER_TURN;
         }
 
@@ -282,7 +282,7 @@ class PIDMotor{
             return encoder.getCount();
         }
 
-        void SetHardSpeed(float speed){
+        void SetHardSpeed(double speed){
             SetMotorSpeendAndDir(speed);
         }
 

@@ -11,10 +11,10 @@ class PositionControler{
         Point current_point;
         Point target_point;
 
-        float current_angle = 0;
+        double current_angle = 0;
 
-        float last_distance = 0;
-        float last_angle = 0;
+        double last_distance = 0;
+        double last_angle = 0;
 
         bool started = false;
         bool auto_mode = false;
@@ -22,7 +22,7 @@ class PositionControler{
         ValueConverter* valueConverter;
 
     public:
-        PositionControler(DriveControler* driveControler, int pulse_per_turn, float wheel_diameter, float wheel_distance){
+        PositionControler(DriveControler* driveControler, int pulse_per_turn, double wheel_diameter, double wheel_distance){
             this->driveControler = driveControler;
 
             valueConverter = new ValueConverter(pulse_per_turn, wheel_diameter, wheel_distance);
@@ -34,11 +34,11 @@ class PositionControler{
         void Update(){
 
             // integrate the position
-            float distance = valueConverter->PulseToDistanceCM(driveControler->GetDistance());  // in centimeter
-            float angle = valueConverter->PulseToAngle(driveControler->GetAngle());             // in degree
+            double distance = valueConverter->PulseToDistanceCM(driveControler->GetDistance());  // in centimeter
+            double angle = valueConverter->PulseToAngle(driveControler->GetAngle());             // in degree
 
-            float d_distance = distance - last_distance;    // in centimeter
-            float d_angle = angle - last_angle;             // in degree
+            double d_distance = distance - last_distance;    // in centimeter
+            double d_angle = angle - last_angle;             // in degree
 
             current_angle += d_angle;
 
@@ -64,7 +64,7 @@ class PositionControler{
             return current_point;
         }
 
-        float GetCurrentAngle(){
+        double GetCurrentAngle(){
             return current_angle;
         }
 
@@ -74,8 +74,8 @@ class PositionControler{
 
             current_point.x = 0;
             current_point.y = 0;
-
             current_angle = 0;
+
             last_angle = 0;
             last_distance = 0;
         }
