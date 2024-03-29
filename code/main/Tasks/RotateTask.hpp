@@ -56,7 +56,7 @@ public:
 
     bool IsDone() override {
 
-        double current_angle = positionControler->GetCurrentAngle(); // in degree
+        double current_angle = valueConverter->PulseToAngle(driveControler->GetAngle()); // in degree
 
         double angle_diff = target_angle_degree - current_angle;
 
@@ -81,7 +81,7 @@ public:
         Serial.print(driveControler->GetAngle());
         Serial.print(",");
 
-        double current_angle = positionControler->GetCurrentAngle(); // in degree
+        double current_angle = valueConverter->PulseToAngle(driveControler->GetAngle()); // in degree
 
         double angle_diff = target_angle_degree - current_angle;
 
