@@ -10,7 +10,7 @@
 #define MOTOR_R_PIN_2 26
 
 //  Global motor parameters
-#define MOTOR_ACCELERATION 20
+#define MOTOR_ACCELERATION 10
 #define MOTOR_MAX_SPEED 40
 #define MOTOR_MIN_SPEED 0
 #define MOTOR_THRESHOLD_SPEED 3
