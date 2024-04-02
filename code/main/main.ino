@@ -9,7 +9,7 @@
 
 #define SAMPLE_TIME 15
 
-#define IS_MAIN false
+#define IS_MAIN true
 
 #if IS_MAIN
     #include "settings/main/motor_def.h";
@@ -29,7 +29,12 @@
 
 BluetoothSerial SerialBT;
 
-Radar radar(TRIGGER_PIN, ECHO_PIN);
+#define RXp2 16
+#define TXp2 17
+
+const int BUFFER_SIZE = 64;  // Adjust the buffer size as needed
+char buffer[BUFFER_SIZE];
+int bufferIndex = 0;
 
 PIDMotor motorL(MOTOR_L_PIN_1, MOTOR_L_PIN_2, MOTOR_ACCELERATION, MOTOR_MAX_SPEED, MOTOR_MIN_SPEED, MOTOR_THRESHOLD_SPEED, PAMI_DUAL_MODE);
 PIDMotor motorR(MOTOR_R_PIN_1, MOTOR_R_PIN_2, MOTOR_ACCELERATION, MOTOR_MAX_SPEED, MOTOR_MIN_SPEED, MOTOR_THRESHOLD_SPEED, PAMI_DUAL_MODE);
@@ -44,9 +49,6 @@ TaskControler taskControler(&positionControler,&driveControler, &valueConverter)
 PositionTaskBuilder positionTaskBuilder(&positionControler, &driveControler, &valueConverter);
 
 void setup () { 
-
-    radar.Init();
-
 
     #if IS_MAIN
         myClaw.Init();
@@ -64,8 +66,11 @@ void setup () {
     driveControler.InitPid(DISTANCE_KP, DISTANCE_KI, DISTANCE_KD, ANGLE_KP, ANGLE_KI, ANGLE_KD, SAMPLE_TIME);
 
     Serial.begin ( 115200 );
-    SerialBT.begin(device_name); //Bluetooth device name
-
+    //SerialBT.begin(device_name); //Bluetooth device name
+    
+    // Radar setup
+    Serial2.begin(9600, SERIAL_8N1, RXp2, TXp2);
+    
     taskControler.SetAutoMode(false);
 
 }
@@ -75,9 +80,11 @@ double global_target_2 = 0;
 
 void SerialCommande(){
 
-    if(SerialBT.available() > 0){
+    //if(SerialBT.available() > 0){
+    if(Serial.available() > 0){
 
-        String commande = SerialBT.readStringUntil('\n');
+        //String commande = SerialBT.readStringUntil('\n');
+        String commande = Serial.readStringUntil('\n');
         char commande_type = commande.charAt(0);
         
         switch(commande_type){
@@ -121,7 +128,7 @@ void SerialCommande(){
                     // create Points array
                     Point points[7] = {
                         {0,0},
-                        {40,0},
+                        //{40,0},
                         {80,0},
                         {80,40},
                         {40,40},
@@ -161,13 +168,64 @@ void SerialCommande(){
 
 }
 
+
+void processBuffer() {
+  // Process the data stored in the buffer
+  // For example, you can print it or perform any other desired operation
+  for (int i = 0; i < bufferIndex; i++) {
+    if (buffer[i] == '\n') {
+      // If newline character is encountered, print the message and reset buffer
+
+      int number = atoi(buffer); // Convert the buffer content to an integer
+        Serial.print("Number: ");
+        Serial.println(number);
+        
+      if (number < 10) {
+        Serial.println("Arret");
+        driveControler.UrgentStop();
+        
+        motorL.UrgentStop();
+        motorR.UrgentStop();
+
+        taskControler.Stop();
+        }
+        else 
+        {
+        Serial.println("Avance");   
+        taskControler.Start();
+        } 
+      Serial.println();
+      Serial.write(buffer, i + 1); // Print the message until the newline character
+      Serial.println();
+      
+      // Move remaining data to the beginning of the buffer
+      memmove(buffer, buffer + i + 1, bufferIndex - i - 1);
+      bufferIndex -= i + 1;
+      i = -1; // Reset i to start from the beginning of the buffer
+    }
+  }
+}
+
+
 void loop () {    
     SerialCommande();
 
-    double distance_mm = radar.GetDistance();
-    if(distance_mm < 100){
-        driveControler.UrgentStop();
+    while (Serial2.available() > 0) {
+    char incomingByte = Serial2.read();
+
+    // Store incoming byte in the buffer
+    buffer[bufferIndex++] = incomingByte;
+
+    // Check if the buffer is full
+    if (bufferIndex >= BUFFER_SIZE) {
+      processBuffer();  // Process the buffer when it's full
     }
+  }
+
+  // Process remaining data in the buffer
+  if (bufferIndex > 0) {
+    processBuffer();
+  }
 
     taskControler.Update();
     //taskControler.Debug();

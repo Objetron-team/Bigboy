@@ -1,6 +1,6 @@
 // define PID value for the Drive controller
 
-#define DISTANCE_KP 0.10
+#define DISTANCE_KP 0.06
 #define DISTANCE_KI 0.00
 #define DISTANCE_KD 0.00
 
