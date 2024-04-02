@@ -56,20 +56,27 @@ public:
         
         */
 
-        servo_1->write(100);
-        servo_2->write(100);
+        servo_1->write(110);
+        delay(1000);
+        servo_1->write(90);
+        delay(1000);
+        servo_1->write(75);
+        delay(1000);
+        servo_1->write(90);
+        
+
     }
 
     void Close(){
 
-        /*
-        direction = -1;
-        open_time = millis();
-        RunMotor(direction);
-        */
+        servo_2->write(80);
+        delay(1000);
+        servo_2->write(90);
+        delay(1000);
+        servo_2->write(103);
+        delay(1000);
+        servo_2->write(90);
 
-        servo_1->write(0);
-        servo_2->write(0);
     }   
 
     void Update(){

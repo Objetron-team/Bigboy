@@ -108,20 +108,16 @@ void SerialCommande(){
                 global_target_2 -= 1000;
 
                 break;
-            // case 'e':
-
-            //     #if IS_MAIN
-            //         myClaw.Open();
-            //     #endif
-
-            //     break;
-            // case 'a':
-                
-            //     #if IS_MAIN
-            //         myClaw.Close();
-            //     #endif
-
-            //     break;
+            case 'e':
+                #if IS_MAIN
+                    myClaw.Open();
+                #endif
+                break;
+            case 'a':
+                #if IS_MAIN
+                    myClaw.Close();
+                #endif
+                break;
 
             case 'b':
                 {
