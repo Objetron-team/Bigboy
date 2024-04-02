@@ -49,33 +49,21 @@ public:
     }
 
     void Open(){
-        /*
-        direction = 1;
-        open_time = millis();
-        RunMotor(direction);
-        
-        */
 
         servo_1->write(110);
+        servo_2->write(80);
         delay(1000);
         servo_1->write(90);
-        delay(1000);
-        servo_1->write(75);
-        delay(1000);
-        servo_1->write(90);
-        
-
+        servo_2->write(90);
     }
 
     void Close(){
 
-        servo_2->write(80);
-        delay(1000);
-        servo_2->write(90);
-        delay(1000);
         servo_2->write(103);
+        servo_1->write(75);
         delay(1000);
         servo_2->write(90);
+        servo_1->write(90);
 
     }   
 
