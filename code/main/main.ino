@@ -45,12 +45,12 @@ PIDMotor motorR(MOTOR_R_PIN_1, MOTOR_R_PIN_2, MOTOR_ACCELERATION, MOTOR_MAX_SPEE
 
 ValueConverter valueConverter(ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
 
-DriveControler driveControler(& motorL, & motorR);
-PositionControler positionControler(& driveControler, ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
+DriveControler driveControler( & motorL, & motorR);
+PositionControler positionControler( & driveControler, ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
 
-TaskControler taskControler(& positionControler, & driveControler, & valueConverter);
+TaskControler taskControler( & positionControler, & driveControler, & valueConverter);
 
-PositionTaskBuilder positionTaskBuilder(& positionControler, & driveControler, & valueConverter);
+PositionTaskBuilder positionTaskBuilder( & positionControler, & driveControler, & valueConverter);
 
 void setup() { 
     
@@ -85,158 +85,34 @@ double global_target_2 = 0;
 
 void SerialCommande() {
     
-    if (SerialBT.available() > 0) {
+    if (Serial.available() > 0) {
         //if(Serial.available() > 0) {
         
-        String commande = SerialBT.readStringUntil('\n');
-        //String commande = Serial.readStringUntil('\n');
-        char commande_type = commande.charAt(0);
+        String commande = Serial.readStringUntil('\n');
         
-        switch(commande_type) {
-            case 'z':
-                
-                global_target += 5000;
-                
-                break;
-            case 's':
-                
-                global_target -= 5000;
-                
-                break;
-            case 'q':
-                
-                global_target_2 += 1000;
-                
-                break;
-            case 'd':
-                
-                global_target_2 -= 1000;
-                
-                break;
-            case 'e':
-                #if IS_MAIN
-                    myClaw.Open();
-                #endif
-                break;
-            case 'a':
-                #if IS_MAIN
-                    myClaw.Close();
-                #endif
-                break;
-            
-            case 'b':
-                {
-                    // create Points array
-                    Point points[7] = {
-                        {0,0} ,
-                        //{40,0},
-                        {80,0} ,
-                        {80,40} ,
-                        {40,40} ,
-                        {40,0} ,
-                        {0,0}
-                    };
-                    
-                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,7);
-                    
-                    taskControler.AddTask(task);
-                    break;
-                }
-                case'y':
-                taskControler.SetAutoMode(true);
-                break;
-            case 'h':
-                taskControler.SetAutoMode(false);
-                break;
-            case 'o':
-                taskControler.Start();
-                break;
-            case 'p':
-                taskControler.Stop();
-                break;
-            case 'n':
-                taskControler.NextTask();
-                break;
-            case 'r':
-                taskControler.Reset();
-                break;
-            
-            default:
-            break;
+        // convert the incoming command to number
+        int number = atoi(commande.c_str());
+        
+        // convert to double
+        global_target = (double) number;
+        
+        driveControler.SetDistance(global_target);
+        
+        if (global_target == 0) {
+            driveControler.Reset();
         }
-        
     }
     
 }
 
 
-void processBuffer() {
-    //Process the data stored in the buffer
-    //For example, you can print it or perform any other desired operation
-    for (int i = 0; i < bufferIndex; i++) {
-        if (buffer[i] == '\n') {
-            // If newline character is encountered, print the message and reset buffer
-            
-            int number = atoi(buffer); // Convert the buffer content to an integer
-            Serial.print("Number: ");
-            Serial.println(number);
-            
-            if (number < 10) {
-                Serial.println("Arret");
-                driveControler.UrgentStop();
-                
-                taskControler.Stop();
-            } else {
-                Serial.println("Avance");   
-                taskControler.Start();
-            } 
-            Serial.println();
-            Serial.write(buffer, i + 1); // Print the message until the newline character
-            Serial.println();
-            
-            // Move remaining data to the beginning of the buffer
-            memmove(buffer, buffer + i + 1, bufferIndex - i - 1);
-            bufferIndex -= i + 1;
-            i = -1; // Reset i to start from the beginning of the buffer
-        }
-    }
-}
 
 
 void loop() {    
     SerialCommande();
     
-    #if IS_MAIN
-        
-        while(Serial2.available() > 0) {
-        char incomingByte = Serial2.read();
-        
-        // Store incoming byte in the buffer
-        buffer[bufferIndex++] = incomingByte;
-        
-        // Check if the buffer is full
-        if (bufferIndex >= BUFFER_SIZE) {
-            processBuffer();  // Process the buffer when it's full
-        }
-    }
-    
-    // Process remaining data in the buffer
-    if (bufferIndex > 0) {
-        processBuffer();
-    }
-    
-    #else
-        
-        double distance_mm = radar.GetDistance();
-    if (distance_mm < 100) {
-        driveControler.UrgentStop();
-    }
-    #endif
-    
-    taskControler.Update();
-    //taskControler.Debug();
-    
-    //driveControler.Debug();
+    driveControler.Update();
+    driveControler.Debug();
     
     delay(5);
 }
