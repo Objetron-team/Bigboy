@@ -1,4 +1,10 @@
+
+
+#if PAMI_TYPE == 0
 String device_name = "MySweetPami";
+#else
+String device_name = "MyLittlePami";
+#endif
 
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
 #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
