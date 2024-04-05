@@ -46,12 +46,12 @@ PIDMotor motorR(MOTOR_R_PIN_1, MOTOR_R_PIN_2, MOTOR_ACCELERATION, MOTOR_MAX_SPEE
 
 ValueConverter valueConverter(ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
 
-DriveControler driveControler(& motorL, & motorR);
-PositionControler positionControler(& driveControler, ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
+DriveControler driveControler( & motorL, & motorR);
+PositionControler positionControler( & driveControler, ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
 
-TaskControler taskControler(& positionControler, & driveControler, & valueConverter);
+TaskControler taskControler( & positionControler, & driveControler, & valueConverter);
 
-PositionTaskBuilder positionTaskBuilder(& positionControler, & driveControler, & valueConverter);
+PositionTaskBuilder positionTaskBuilder( & positionControler, & driveControler, & valueConverter);
 
 void setup() { 
     
@@ -59,6 +59,8 @@ void setup() {
         myClaw.Init();
     // Radar setup
     Serial2.begin(9600, SERIAL_8N1, RXp2, TXp2);
+    #else
+        radar.Init();
     #endif
     
     // Motor setup
@@ -95,26 +97,62 @@ void SerialCommande() {
         
         switch(commande_type) {
             case 'z':
-                
-                global_target += 5000;
-                
-                break;
-            case 's':
-                
-                global_target -= 5000;
-                
-                break;
-            case 'q':
-                
-                global_target_2 += 1000;
-                
-                break;
-            case 'd':
-                
-                global_target_2 -= 1000;
-                
-                break;
-            case 'e':
+                {
+                    // create Points array  blue 1
+                    Point points[7] = {
+                        {0,0} ,
+                        {20,0} ,
+                        {20, -90} ,
+                    };
+                    
+                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,7);
+                    
+                    taskControler.AddTask(task);
+                    break;
+                }
+                case's':
+                {
+                    // create Points array bleu 2
+                    Point points[7] = {
+                        {0,0} ,
+                        {75,0} ,
+                        {75, 140} ,
+                    };
+                    
+                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,7);
+                    
+                    taskControler.AddTask(task);
+                    break;
+                }
+                case'q':
+                {
+                    // create Points array yellow 1
+                    Point points[7] = {
+                        {0,0} ,
+                        {20,0} ,
+                        {20, 90} ,
+                    };
+                    
+                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,7);
+                    
+                    taskControler.AddTask(task);
+                    break;
+                }
+                case'd':
+                {
+                    // create Points array yellow 2
+                    Point points[7] = {
+                        {0,0} ,
+                        {75,0} ,
+                        {75, -140} ,
+                    };
+                    
+                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,7);
+                    
+                    taskControler.AddTask(task);
+                    break;
+                }
+                case'e':
                 #if IS_MAIN
                     myClaw.Open();
                 #endif
@@ -229,7 +267,8 @@ void loop() {
     #else
         
         double distance_mm = radar.GetDistance();
-    if (distance_mm < 100) {
+    
+    if (distance_mm < 150) {
         driveControler.UrgentStop();
     }
     #endif
