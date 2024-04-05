@@ -45,12 +45,12 @@ PIDMotor motorR(MOTOR_R_PIN_1, MOTOR_R_PIN_2, MOTOR_ACCELERATION, MOTOR_MAX_SPEE
 
 ValueConverter valueConverter(ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
 
-DriveControler driveControler( & motorL, & motorR);
-PositionControler positionControler( & driveControler, ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
+DriveControler driveControler(& motorL, & motorR);
+PositionControler positionControler(& driveControler, ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
 
-TaskControler taskControler( & positionControler, & driveControler, & valueConverter);
+TaskControler taskControler(& positionControler, & driveControler, & valueConverter);
 
-PositionTaskBuilder positionTaskBuilder( & positionControler, & driveControler, & valueConverter);
+PositionTaskBuilder positionTaskBuilder(& positionControler, & driveControler, & valueConverter);
 
 void setup() { 
     
@@ -111,8 +111,18 @@ void SerialCommande() {
 void loop() {    
     SerialCommande();
     
-    driveControler.Update();
-    driveControler.Debug();
+    //motorL.SetSpeed(100);
+    //motorR.SetSpeed(100);
+    
+    //motorL.Update();
+    //motorR.Update();
+    
+    Serial.print("L:");
+    Serial.print(motorL.GetSpeed());
+    Serial.print(",");
+    Serial.print("R:");
+    Serial.println(motorR.GetSpeed());
+    
     
     delay(5);
 }
