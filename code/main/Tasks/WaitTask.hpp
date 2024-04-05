@@ -2,43 +2,48 @@
 
 #include "BasicTask.hpp"
 
-
 #define WAIT_TIME_MS 500
 #define DO_STOP_ROBOT true
 
-class WaitTask : public BasicTask{
+class WaitTask : public BasicTask
+{
 
 private:
-    PositionControler* positionControler;
-    DriveControler* driveControler;
-    ValueConverter* valueConverter;
+    PositionControler *positionControler;
+    DriveControler *driveControler;
+    ValueConverter *valueConverter;
 
     long start_time = 0;
-public:
 
-    WaitTask(PositionControler* positionControler,DriveControler* driveControler ,ValueConverter* valueConverter)  {
+    bool _IsDone() override
+    {
+        return millis() - start_time > WAIT_TIME_MS;
+    }
+
+    void _Update() override
+    {
+
+        if (DO_STOP_ROBOT)
+        {
+            driveControler->UrgentStop();
+        }
+    }
+
+public:
+    WaitTask(PositionControler *positionControler, DriveControler *driveControler, ValueConverter *valueConverter)
+    {
         this->positionControler = positionControler;
         this->driveControler = driveControler;
         this->valueConverter = valueConverter;
     }
 
-    void Update() override {
-
-        if(DO_STOP_ROBOT){
-            driveControler->UrgentStop();
-        }
-
-    }
-
-    void Compute() override {
+    void Compute() override
+    {
         start_time = millis();
     }
 
-    bool IsDone() override {
-        return millis() - start_time > WAIT_TIME_MS;
-    }
-
-    void Debug() override {
+    void Debug() override
+    {
         Serial.print("Start_time:");
         Serial.print(start_time);
         Serial.print(",");
@@ -52,7 +57,5 @@ public:
 
         Serial.print("Wait:");
         Serial.println(error);
-
     }
-
 };
