@@ -6,38 +6,29 @@ private:
 
     Servo* servo_1;
     Servo* servo_2;
+    Servo* servo_3;
 
     int CLAW_TIME;
 
     int pin_1;
     int pin_2;
+    int pin_3;
 
     int direction;
 
     long open_time;
     long current_time;
-
-    void RunMotor(int direction){
-
-        if(current_time - open_time < CLAW_TIME){
-
-            servo_1->write(200 * direction);
-            servo_2->write(200 * direction);
-
-        }
-        else{
-            servo_1->write(0);
-            servo_2->write(0);
-        }
-    }
+    
 
 public:
-    Claw(int pin_1, int pin_2, int time){
+    Claw(int pin_1, int pin_2, int pin_3,int time){
         servo_1 = new Servo();
         servo_2 = new Servo();
+        servo_3 = new Servo();
 
         this->pin_1 = pin_1;
         this->pin_2 = pin_2;
+        this->pin_3 = pin_3;
 
         CLAW_TIME = time;
     }
@@ -46,6 +37,7 @@ public:
     void Init(){
         servo_1->attach(pin_1);
         servo_2->attach(pin_2);
+        servo_3->attach(pin_3);
     }
 
     void Open(){
@@ -67,9 +59,19 @@ public:
 
     }   
 
+    void Boubou(){
+        servo_3->write(70);
+        delay(1000);
+        servo_3->write(90);
+        delay(1000);
+        servo_3->write(100);
+        delay(1000);
+        servo_3->write(90);
+        
+    }
+
     void Update(){
         current_time = millis();
-        RunMotor(direction);
     }
 
 };

@@ -18,7 +18,7 @@
     #include "settings/main/radar.h";
     #include "settings/main/claw.h";
     
-    Claw myClaw(PIN_CLAW_1, PIN_CLAW_2,CLAW_TIME);
+    Claw myClaw(PIN_CLAW_1, PIN_CLAW_2,PIN_CLAW_3,CLAW_TIME);    
 
 #else
     #include "settings/pami/motor_def.h";
@@ -35,6 +35,7 @@ BluetoothSerial SerialBT;
 const int BUFFER_SIZE = 64;  // Adjust the buffer size as needed
 char buffer[BUFFER_SIZE];
 int bufferIndex = 0;
+int number = 10000;
 
 PIDMotor motorL(MOTOR_L_PIN_1, MOTOR_L_PIN_2, MOTOR_ACCELERATION, MOTOR_MAX_SPEED, MOTOR_MIN_SPEED, MOTOR_THRESHOLD_SPEED, PAMI_DUAL_MODE);
 PIDMotor motorR(MOTOR_R_PIN_1, MOTOR_R_PIN_2, MOTOR_ACCELERATION, MOTOR_MAX_SPEED, MOTOR_MIN_SPEED, MOTOR_THRESHOLD_SPEED, PAMI_DUAL_MODE);
@@ -66,7 +67,7 @@ void setup () {
     driveControler.InitPid(DISTANCE_KP, DISTANCE_KI, DISTANCE_KD, ANGLE_KP, ANGLE_KI, ANGLE_KD, SAMPLE_TIME);
 
     Serial.begin ( 115200 );
-    //SerialBT.begin(device_name); //Bluetooth device name
+    SerialBT.begin(device_name); //Bluetooth device name
     
     // Radar setup
     Serial2.begin(9600, SERIAL_8N1, RXp2, TXp2);
@@ -80,11 +81,11 @@ double global_target_2 = 0;
 
 void SerialCommande(){
 
-    //if(SerialBT.available() > 0){
-    if(Serial.available() > 0){
+    if(SerialBT.available() > 0){
+    //if(Serial.available() > 0){
 
-        //String commande = SerialBT.readStringUntil('\n');
-        String commande = Serial.readStringUntil('\n');
+        String commande = SerialBT.readStringUntil('\n');
+        //String commande = Serial.readStringUntil('\n');
         char commande_type = commande.charAt(0);
         
         switch(commande_type){
@@ -117,6 +118,10 @@ void SerialCommande(){
                 #if IS_MAIN
                     myClaw.Close();
                 #endif
+            case 'u':
+                #if IS_MAIN
+                    myClaw.Boubou();
+                #endif
                 break;
 
             case 'b':
@@ -124,7 +129,7 @@ void SerialCommande(){
                     // create Points array
                     Point points[7] = {
                         {0,0},
-                        //{40,0},
+                        {40,0},
                         {80,0},
                         {80,40},
                         {40,40},
@@ -173,21 +178,18 @@ void processBuffer() {
       // If newline character is encountered, print the message and reset buffer
 
       int number = atoi(buffer); // Convert the buffer content to an integer
-        Serial.print("Number: ");
-        Serial.println(number);
+        //Serial.print("Number: ");
+        //Serial.println(number);
         
-      if (number < 10) {
-        Serial.println("Arret");
+      if (number < 20) {
+        //Serial.println("Arret");
         driveControler.UrgentStop();
-        
-        motorL.UrgentStop();
-        motorR.UrgentStop();
 
         taskControler.Stop();
         }
         else 
         {
-        Serial.println("Avance");   
+        //Serial.println("Avance");   
         taskControler.Start();
         } 
       Serial.println();
