@@ -26,11 +26,20 @@
 #define ENCODER_R_PIN_A 39
 #define ENCODER_R_PIN_B 36
 
+#if PAMI_TYPE == 0
+// PAMI NOIRE
 #define ENCODER_RESOLUTION 1786  // pulses per revolution
-#define ENCODER_MAX_FREQ 6400   // Hz
-#define WHEEL_DIAMETER 0.035    // meters    
-#define WHEEL_DISTANCE 0.112 / 2   // meters
+#define ENCODER_MAX_FREQ 6400    // Hz
+#define WHEEL_DIAMETER 0.035     // meters
+#define WHEEL_DISTANCE 0.112 / 2 // meters
+#else
+// PAMI GRIS
+#define ENCODER_RESOLUTION 3570  // pulses per revolution
+#define ENCODER_MAX_FREQ 6400    // Hz
+#define WHEEL_DIAMETER 0.035     // meters
+#define WHEEL_DISTANCE 0.112 / 2 // meters
 
+#endif
 
 // PID definition
 
