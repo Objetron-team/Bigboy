@@ -10,7 +10,7 @@
 #define SAMPLE_TIME 15
 
 #define IS_MAIN false
-#define PAMI_TYPE 1
+#define PAMI_TYPE 0
 
 #if IS_MAIN
     #include "settings/main/motor_def.h";
@@ -268,7 +268,7 @@ void loop() {
         
         double distance_mm = radar.GetDistance();
     
-    if (distance_mm < 150) {
+    if (distance_mm < 200) {
         driveControler.UrgentStop();
     }
     #endif
