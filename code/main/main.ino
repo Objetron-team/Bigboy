@@ -1,347 +1,242 @@
-#include "motor/motor.h";
-#include "motor/motor.cpp";
+#include "PIDMotor.hpp"
+#include "DriveControler.hpp"
+#include "PositionControler.hpp"
+#include "TaskControler.hpp"
+#include "BluetoothSerial.h"
+#include "Claw.hpp"
+#include "Radar.hpp"
+#include "PositionTaskBuilder.hpp"
 
-#include "encoder/encoder.h";
-#include "encoder/encoder.cpp";
+#define SAMPLE_TIME 15
 
-#include "pid/pid.h";
-#include "pid/pid.cpp";
+#define IS_MAIN false
 
-#include "driveController/driveController.h";
-#include "driveController/driveController.cpp";
+#if IS_MAIN
+    #include "settings/main/motor_def.h";
+#include "settings/main/drive_def.h";
+#include "settings/main/bluetooth_config.h";
+#include "settings/main/radar.h";
+#include "settings/main/claw.h";
 
-#include "positionController/positionController.h";
-#include "positionController/positionController.cpp";
+Claw myClaw(PIN_CLAW_1, PIN_CLAW_2,CLAW_TIME);
 
-#include "ultrasound/ultrasound.h";
-#include "ultrasound/ultrasound.cpp";
+#else
+    #include "settings/pami/motor_def.h";
+#include "settings/pami/drive_def.h";
+#include "settings/pami/bluetooth_config.h";
+#include "settings/pami/radar.h";
 
+Radar radar(TRIGGER_PIN, ECHO_PIN);
+#endif
 
-/*
-    - adruino mega pins
+BluetoothSerial SerialBT;
 
-    interrup -> 18,19,20,21,    2 and 3
+#define RXp2 16
+#define TXp2 17
 
-    analogue write -> 2..13, 44..46
-
-*/
-
-
-Motor motorRight;
-Motor motorLeft;
-
-const bool PAMI_DUAL_INPUT = true;
-
-const int MOTOR_RIGHT_SPEED_PIN = 2;
-const int MOTOR_RIGHT_DIRECTION_PIN = 3;
-
-const int MOTOR_LEFT_SPEED_PIN = 4;
-const int MOTOR_LEFT_DIRECTION_PIN = 5;
-
-const int acceleration_right = 50;  // % per sec
-const int acceleration_left = 50;  // % per sec
-
-float max_speed_left = 50.0f;
-float max_speed_right = 50.0f;
-
-float threshold_speed_left = 3.0f;
-float threshold_speed_right = 3.0f;
-
-float min_speed_left = 0;//11.0f;
-float min_speed_right = 0;//11.0f;
-
-void InitMotor(){
-
-    motorRight.Init(MOTOR_RIGHT_DIRECTION_PIN,MOTOR_RIGHT_SPEED_PIN,acceleration_right,threshold_speed_right,min_speed_right, max_speed_right,PAMI_DUAL_INPUT);
-    motorLeft.Init(MOTOR_LEFT_DIRECTION_PIN,MOTOR_LEFT_SPEED_PIN ,acceleration_left,threshold_speed_left,min_speed_left, max_speed_left,PAMI_DUAL_INPUT);
-
-    motorRight.SetSpeed(0);
-    motorLeft.SetSpeed(0);
-}
-
-const int WHEEL_ENCODER_PIN_RIGHT_A = 18;
-const int WHEEL_ENCODER_PIN_RIGHT_B = 19;
-
-const int WHEEL_ENCODER_PIN_LEFT_A = 20;
-const int WHEEL_ENCODER_PIN_LEFT_B = 21;
-
-const float WHEEL_DIAMETER = 0.026; //m
-const float ENCODER_RESOLUTION = 3575.04; //pulse per rotation
-const float DEBOUNCED_TIME = 5.0f; //ms    
-
-Encoder encoderRight;
-Encoder encoderLeft;
-
-void InitEncoder(){
-
-    encoderRight.Init(&motorRight,WHEEL_ENCODER_PIN_RIGHT_A,WHEEL_ENCODER_PIN_RIGHT_B,WHEEL_DIAMETER,ENCODER_RESOLUTION,DEBOUNCED_TIME);
-    encoderLeft.Init(&motorLeft,WHEEL_ENCODER_PIN_LEFT_A,WHEEL_ENCODER_PIN_LEFT_B,WHEEL_DIAMETER,ENCODER_RESOLUTION,DEBOUNCED_TIME);
-
-    attachInterrupt(digitalPinToInterrupt(WHEEL_ENCODER_PIN_RIGHT_A), CouterRight, CHANGE);
-
-    attachInterrupt(digitalPinToInterrupt(WHEEL_ENCODER_PIN_LEFT_A), CouterLeft, CHANGE);
-}
-
-void CouterRight(){
-    encoderRight.DebouncedCount();
-}
-
-void CouterLeft(){
-    encoderLeft.DebouncedCount();
-}
-
-const byte ULTRASOUND_TRIGGER_PIN = 9;
-const byte ULTRASOUND_ECHO_PIN = 8;
-
-const byte TRIGGER_PIN = 9; // Broche TRIGGER
-const byte ECHO_PIN = 8;   // Broche ECHO
-const unsigned long MEASURE_TIMEOUT = 25000UL; // 25ms = ~8m à 340m/s
-
-/* Vitesse du son dans l'air en mm/us */
-const float SOUND_SPEED = 340.0 / 1000;
+const int BUFFER_SIZE = 64;  // Adjust the buffer size as needed
+char buffer[BUFFER_SIZE];
+int bufferIndex = 0;
 
 
-Ultrasound ultrasound;
 
-void InitUltrasound(){
+PIDMotor motorL(MOTOR_L_PIN_1, MOTOR_L_PIN_2, MOTOR_ACCELERATION, MOTOR_MAX_SPEED, MOTOR_MIN_SPEED, MOTOR_THRESHOLD_SPEED, PAMI_DUAL_MODE);
+PIDMotor motorR(MOTOR_R_PIN_1, MOTOR_R_PIN_2, MOTOR_ACCELERATION, MOTOR_MAX_SPEED, MOTOR_MIN_SPEED, MOTOR_THRESHOLD_SPEED, PAMI_DUAL_MODE);
 
-    //pinMode(ULTRASOUND_ECHO_PIN,INPUT);
+ValueConverter valueConverter(ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
 
+DriveControler driveControler(& motorL, & motorR);
+PositionControler positionControler(& driveControler, ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
 
-    //pinMode(ULTRASOUND_TRIGGER_PIN,OUTPUT);
-    //digitalWrite(ULTRASOUND_TRIGGER_PIN, LOW);
-    ultrasound.Init(ULTRASOUND_ECHO_PIN,ULTRASOUND_TRIGGER_PIN);
-}
+TaskControler taskControler(& positionControler, & driveControler, & valueConverter);
 
+PositionTaskBuilder positionTaskBuilder(& positionControler, & driveControler, & valueConverter);
 
-DriveController driveController;
-PositionController positionController;
-
-void setup() {
-
-    Serial.begin(38400);
-
-    pinMode(TRIGGER_PIN, OUTPUT);
-    digitalWrite(TRIGGER_PIN, LOW); // La broche TRIGGER doit être à LOW au repos
-    pinMode(ECHO_PIN, INPUT);
-
-    InitUltrasound();
-
-    InitMotor();
-    InitEncoder();
+void setup() { 
     
-
-    driveController.Init(&motorRight,&motorLeft,&encoderRight,&encoderLeft);
-    positionController.Init(&driveController,&ultrasound);
-
-
-    //define the path to follow
-    //positionController.AddPoint({100,100});
-    //positionController.AddPoint({200,100});
-    //positionController.AddPoint({100,200});
-
-    //delay(1000);
-
-    //DebugPath();
+    #if IS_MAIN
+        myClaw.Init();
+    // Radar setup
+    Serial2.begin(9600, SERIAL_8N1, RXp2, TXp2);
+    #endif
+    
+    // Motor setup
+    motorL.InitEncoder(ENCODER_L_PIN_A, ENCODER_L_PIN_B, ENCODER_MAX_FREQ, ENCODER_RESOLUTION, WHEEL_DIAMETER);
+    motorR.InitEncoder(ENCODER_R_PIN_A, ENCODER_R_PIN_B, ENCODER_MAX_FREQ, ENCODER_RESOLUTION, WHEEL_DIAMETER);
+    
+    // PID setup
+    motorL.InitPID(LS_PID_KP, LS_PID_KI, LS_PID_KD, SAMPLE_TIME);
+    motorR.InitPID(RS_PID_KP, RS_PID_KI, RS_PID_KD, SAMPLE_TIME);
+    
+    // DriveControler setup
+    driveControler.InitPid(DISTANCE_KP, DISTANCE_KI, DISTANCE_KD, ANGLE_KP, ANGLE_KI, ANGLE_KD, SAMPLE_TIME);
+    
+    Serial.begin(115200);
+    SerialBT.begin(device_name); //Bluetooth device name
+    
+    
+    
+    taskControler.SetAutoMode(false);
+    
 }
-float speed = 0;
 
+double global_target = 0;
+double global_target_2 = 0;
 
-void SerialCommande(){
-
-    if(Serial.available() > 0){
-
-        String commande = Serial.readStringUntil('\n');
-
-
-        /*
-            format commande :
-            {commande} {param1} {param2} {param3} {param4}
+void SerialCommande() {
+    
+    if (SerialBT.available() > 0) {
+        //if(Serial.available() > 0) {
         
-            commande :
-            - m : move
-                param1 : distance
-            - r : rotate
-                param1 : angle
-        */
-    
+        String commande = SerialBT.readStringUntil('\n');
+        //String commande = Serial.readStringUntil('\n');
         char commande_type = commande.charAt(0);
-
-        switch(commande_type){
+        
+        switch(commande_type) {
             case 'z':
-                positionController.Start();
+                
+                global_target += 5000;
+                
                 break;
             case 's':
-                positionController.Stop();
+                
+                global_target -= 5000;
+                
                 break;
-            case 'n':
-                positionController.Next();
+            case 'q':
+                
+                global_target_2 += 1000;
+                
                 break;
-            case 'b':
-                positionController.AddPoint({20,0});
-                positionController.AddPoint({20,90});
+            case 'd':
+                
+                global_target_2 -= 1000;
+                
                 break;
-            case 'y':
-                positionController.AddPoint({20,0});
-                positionController.AddPoint({20,-90});
+            case 'e':
+                #if IS_MAIN
+                    myClaw.Open();
+                #endif
+                break;
+            case 'a':
+                #if IS_MAIN
+                    myClaw.Close();
+                #endif
                 break;
             
-            case 'f':
-                speed = -100;
-                break;
-            case 'g':
-                speed = 100;
+            case 'b':
+                {
+                    // create Points array
+                    Point points[7] = {
+                        {0,0} ,
+                        //{40,0},
+                        {80,0} ,
+                        {80,40} ,
+                        {40,40} ,
+                        {40,0} ,
+                        {0,0}
+                    };
+                    
+                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,7);
+                    
+                    taskControler.AddTask(task);
+                    break;
+                }
+                case'y':
+                taskControler.SetAutoMode(true);
                 break;
             case 'h':
-                speed = 0;
+                taskControler.SetAutoMode(false);
+                break;
+            case 'o':
+                taskControler.Start();
+                break;
+            case 'p':
+                taskControler.Stop();
+                break;
+            case 'n':
+                taskControler.NextTask();
+                break;
+            case 'r':
+                taskControler.Reset();
                 break;
             
-              
             default:
-                break;
+            break;
+        }
+        
+    }
+    
+}
+
+
+void processBuffer() {
+    //Process the data stored in the buffer
+    //For example, you can print it or perform any other desired operation
+    for (int i = 0; i < bufferIndex; i++) {
+        if (buffer[i] == '\n') {
+            // If newline character is encountered, print the message and reset buffer
+            
+            int number = atoi(buffer); // Convert the buffer content to an integer
+            Serial.print("Number: ");
+            Serial.println(number);
+            
+            if (number < 10) {
+                Serial.println("Arret");
+                driveControler.UrgentStop();
+                
+                taskControler.Stop();
+            } else {
+                Serial.println("Avance");   
+                taskControler.Start();
+            } 
+            Serial.println();
+            Serial.write(buffer, i + 1); // Print the message until the newline character
+            Serial.println();
+            
+            // Move remaining data to the beginning of the buffer
+            memmove(buffer, buffer + i + 1, bufferIndex - i - 1);
+            bufferIndex -= i + 1;
+            i = -1; // Reset i to start from the beginning of the buffer
         }
     }
-
-}
-
-void Debug(float distance_mm){
-
-    Serial.print("Tasks:");
-    Serial.print(positionController.GetTaskCount());
-    Serial.print(",");
-
-    Serial.print("Current_task_id:");
-    Serial.print(positionController.current_task.id);
-    Serial.print(",");
-    /*
-    Serial.print("State:");
-    Serial.print(positionController.start);
-    Serial.print(",");
-    */
-    Serial.print("Task_completed:");
-    Serial.print(positionController.IsTaskCompleted());
-    Serial.print(",");
-
-    Serial.print("target_distance:");
-    Serial.print(driveController.GetTargetDistance());
-    Serial.print(",");
- 
-    Serial.print("target_angle:");
-    Serial.print(driveController.GetTargetAngle());
-    Serial.print(",");
-
-    Serial.print("collision_distance:");
-    Serial.print(distance_mm);
-    Serial.print(",");
-
-    Serial.print("x:");
-    Serial.print(driveController.GetX());
-    Serial.print(",");
-
-    Serial.print("y:");
-    Serial.print(driveController.GetY());
-    Serial.print(",");
-
-    Serial.print("theta:");
-    Serial.println(driveController.GetTheta());
-    //Serial.print(",");
-
-}
-
-void DebugPath(){
-    int count = 1;
-    Path *temp_task = positionController.current_task.next_task;
-    while(temp_task != NULL){
-        count++;
-
-        Serial.print("Task:");
-        Serial.print(temp_task->id);
-        Serial.print(",");
-        Serial.print("x:");
-        Serial.print(temp_task->point.x);
-        Serial.print(",");
-        Serial.print("y:");
-        Serial.print(temp_task->point.y);
-        Serial.print(",");
-        Serial.print("angle:");
-        Serial.println(temp_task->angle);
-
-        temp_task = temp_task->next_task;
-    }
-    return count;
-}
-/*
-    Task:1 ,x:0.00      ,y:0.00     ,angle:45.00
-    Task:2 ,x:100.00    ,y:100.00   ,angle:45.00
-    Task:3 ,x:0.00      ,y:0.00     ,angle:0.00
-    Task:4 ,x:200.00    ,y:100.00   ,angle:0.00
-    Task:5 ,x:0.00      ,y:0.00     ,angle:135.00
-    Task:6 ,x:100.00    ,y:200.00   ,angle:135.00
-
-*/
-
-void DebugUltrasound(){
-    Serial.print("Distance:");
-    Serial.println(ultrasound.GetDistance());
-}
-
-void DebugEncoder(){
-    Serial.print("Encoder R:");
-    Serial.print(encoderRight.GetRotationSpeed());
-    Serial.print(",");
-
-    Serial.print("Encoder R Counter:");
-    Serial.print(encoderRight.GetCounter());
-    Serial.print(",");
-
-    Serial.print("Encoder R Direction:");
-    Serial.print(encoderRight.GetDirection());
-    Serial.print(",");
-
-    Serial.print("Encoder L:");
-    Serial.print(encoderLeft.GetRotationSpeed());
-    Serial.print(",");
-
-    Serial.print("Encoder L Counter:");
-    Serial.print(encoderLeft.GetCounter());
-    Serial.print(",");
-
-    Serial.print("Encoder L Direction:");
-    Serial.println(encoderLeft.GetDirection());
-    //Serial.print(",");
-
 }
 
 
-void loop() {
-
-    digitalWrite(TRIGGER_PIN, HIGH);
-    delayMicroseconds(10);
-    digitalWrite(TRIGGER_PIN, LOW);
-    
-    long measure = pulseIn(ECHO_PIN, HIGH, MEASURE_TIMEOUT);
-    if(measure == 0){
-        measure = 1000000;
-    }
-
-    //if timeout -> measure = 1000000 
-    
-    float distance_mm = measure / 2.0 * SOUND_SPEED;
-    
-    //Debug(distance_mm / 10);
-    //DebugPath();
-    DebugEncoder();
-    //encoderRight.GetRotationSpeed();
-
-    //motorRight.SetSpeed(speed);
-    //motorLeft.SetSpeed(speed);
-
+void loop() {    
     SerialCommande();
-
-    positionController.Update(distance_mm / 10);
-
-    //delay(5);
-
-    //DebugUltrasound();
-
+    
+    #if IS_MAIN
+        
+        while(Serial2.available() > 0) {
+        char incomingByte = Serial2.read();
+        
+        // Store incoming byte in the buffer
+        buffer[bufferIndex++] = incomingByte;
+        
+        // Check if the buffer is full
+        if (bufferIndex >= BUFFER_SIZE) {
+            processBuffer();  // Process the buffer when it's full
+        }
+    }
+    
+    // Process remaining data in the buffer
+    if (bufferIndex > 0) {
+        processBuffer();
+    }
+    
+    #else
+        
+        double distance_mm = radar.GetDistance();
+    if (distance_mm < 100) {
+        driveControler.UrgentStop();
+    }
+    #endif
+    
+    taskControler.Update();
+    //taskControler.Debug();
+    
+    //driveControler.Debug();
+    
+    delay(5);
 }
