@@ -1,12 +1,3 @@
-#include "PIDMotor.hpp"
-#include "DriveControler.hpp"
-#include "PositionControler.hpp"
-#include "TaskControler.hpp"
-#include "BluetoothSerial.h"
-#include "Claw.hpp"
-#include "Radar.hpp"
-#include "PositionTaskBuilder.hpp"
-
 #define SAMPLE_TIME 15
 
 #define IS_MAIN false
@@ -18,17 +9,29 @@
 #include "settings/main/bluetooth_config.h";
 #include "settings/main/radar.h";
 #include "settings/main/claw.h";
-
-Claw myClaw(PIN_CLAW_1, PIN_CLAW_2,CLAW_TIME);
-
 #else
     #include "settings/pami/motor_def.h";
 #include "settings/pami/drive_def.h";
 #include "settings/pami/bluetooth_config.h";
 #include "settings/pami/radar.h";
-
-Radar radar(TRIGGER_PIN, ECHO_PIN);
 #endif
+
+#include "PIDMotor.hpp"
+#include "DriveControler.hpp"
+#include "PositionControler.hpp"
+#include "TaskControler.hpp"
+#include "BluetoothSerial.h"
+#include "Claw.hpp"
+#include "Radar.hpp"
+#include "PositionTaskBuilder.hpp"
+
+#if IS_MAIN
+    Claw myClaw(PIN_CLAW_1, PIN_CLAW_2,CLAW_TIME);
+#else
+    Radar radar(TRIGGER_PIN, ECHO_PIN);
+#endif
+
+
 
 BluetoothSerial SerialBT;
 
@@ -38,8 +41,6 @@ BluetoothSerial SerialBT;
 const int BUFFER_SIZE = 64;  // Adjust the buffer size as needed
 char buffer[BUFFER_SIZE];
 int bufferIndex = 0;
-
-
 
 PIDMotor motorL(MOTOR_L_PIN_1, MOTOR_L_PIN_2, MOTOR_ACCELERATION, MOTOR_MAX_SPEED, MOTOR_MIN_SPEED, MOTOR_THRESHOLD_SPEED, PAMI_DUAL_MODE);
 PIDMotor motorR(MOTOR_R_PIN_1, MOTOR_R_PIN_2, MOTOR_ACCELERATION, MOTOR_MAX_SPEED, MOTOR_MIN_SPEED, MOTOR_THRESHOLD_SPEED, PAMI_DUAL_MODE);
@@ -274,7 +275,9 @@ void loop() {
     #endif
     
     taskControler.Update();
-    taskControler.Debug();
+    //taskControler.Debug();
+    
+    //Serial.println(MAX_SPEED_PULSE);
     
     //driveControler.Debug();
     
