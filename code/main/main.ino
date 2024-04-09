@@ -10,7 +10,7 @@
 #define SAMPLE_TIME 15
 
 #define IS_MAIN false
-#define PAMI_TYPE 0
+#define PAMI_TYPE 0 // 0 -> noir 1 -> gris
 
 #if IS_MAIN
     #include "settings/main/motor_def.h";
