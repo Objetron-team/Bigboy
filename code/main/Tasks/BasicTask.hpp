@@ -14,15 +14,23 @@ private:
 
     virtual void _Update();
 
+    virtual void _Compute();
+
+    virtual void _Debug();
+
 public:
     int id = 0;
 
     long start_time = 0;
     long time_to_live = 5; // seconds
 
-    virtual void Compute();
+    void Compute()
+    {
+        start_time = millis();
+        _Compute();
+    }
 
-    virtual void Update()
+    void Update()
     {
         // UpdateTTL();
         _Update();
@@ -39,7 +47,34 @@ public:
         return _IsDone();
     }
 
-    virtual void Debug();
+    void Debug()
+    {
+        Serial.print("Task_id:");
+        Serial.print(id);
+        Serial.print(",");
+
+        Serial.print("Start_time:");
+        Serial.print(start_time);
+        Serial.print(",");
+
+        Serial.print("Current_time:");
+        Serial.print(millis());
+        Serial.print(",");
+
+        int end_time = start_time + time_to_live * 1000;
+
+        Serial.print("End_time:");
+        Serial.print(end_time);
+        Serial.print(",");
+
+        bool is_ttl_done = millis() > end_time;
+
+        Serial.print("TTL_STOP:");
+        Serial.print(is_ttl_done);
+        Serial.print(",");
+
+        _Debug();
+    }
 
     void SetTimeToLive(long time_to_live)
     {
