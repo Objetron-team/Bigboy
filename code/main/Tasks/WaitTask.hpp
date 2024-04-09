@@ -13,11 +13,11 @@ private:
     DriveControler *driveControler;
     ValueConverter *valueConverter;
 
-    long start_time = 0;
+    long start_time_second = 0;
 
     bool _IsDone() override
     {
-        return millis() - start_time > WAIT_TIME_MS;
+        return millis() - start_time_second > WAIT_TIME_MS;
     }
 
     void _Update() override
@@ -29,23 +29,10 @@ private:
         }
     }
 
-public:
-    WaitTask(PositionControler *positionControler, DriveControler *driveControler, ValueConverter *valueConverter)
-    {
-        this->positionControler = positionControler;
-        this->driveControler = driveControler;
-        this->valueConverter = valueConverter;
-    }
-
-    void Compute() override
-    {
-        start_time = millis();
-    }
-
-    void Debug() override
+    void _Debug() override
     {
         Serial.print("Start_time:");
-        Serial.print(start_time);
+        Serial.print(start_time_second);
         Serial.print(",");
 
         long current_time = millis();
@@ -53,9 +40,22 @@ public:
         Serial.print(current_time);
         Serial.print(",");
 
-        long error = current_time - start_time - WAIT_TIME_MS;
+        long error = current_time - start_time_second - WAIT_TIME_MS;
 
         Serial.print("Wait:");
         Serial.println(error);
+    }
+
+    void _Compute() override
+    {
+        start_time_second = millis();
+    }
+
+public:
+    WaitTask(PositionControler *positionControler, DriveControler *driveControler, ValueConverter *valueConverter)
+    {
+        this->positionControler = positionControler;
+        this->driveControler = driveControler;
+        this->valueConverter = valueConverter;
     }
 };
