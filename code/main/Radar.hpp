@@ -1,12 +1,12 @@
 #include <Arduino.h>;
 
-#define SOUND_SPEED  340.0 / 1000
+#define SOUND_SPEED 340.0 / 1000 // mm/s
 #define MEASURE_TIMEOUT 25000UL
 #define MEASURE_INTERVAL 10
 #define OUT_OF_RANGE 1000000
 
-
-class Radar{
+class Radar
+{
 private:
     /* data */
 
@@ -14,25 +14,28 @@ private:
     int echo_pin = 0;
 
 public:
-    Radar(int trigger_pin, int echo_pin){
+    Radar(int trigger_pin, int echo_pin)
+    {
         this->trigger_pin = trigger_pin;
         this->echo_pin = echo_pin;
     }
 
-    void Init(){
+    void Init()
+    {
         pinMode(trigger_pin, OUTPUT);
         digitalWrite(echo_pin, LOW);
     }
 
-
-    double GetDistance(){
+    double GetDistance()
+    {
 
         digitalWrite(trigger_pin, HIGH);
         delayMicroseconds(10);
         digitalWrite(trigger_pin, LOW);
-        
+
         long measure = pulseIn(echo_pin, HIGH, MEASURE_TIMEOUT);
-        if(measure == 0){
+        if (measure == 0)
+        {
             return OUT_OF_RANGE;
         }
 
@@ -40,4 +43,3 @@ public:
         return distance_mm;
     }
 };
-
