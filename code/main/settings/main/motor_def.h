@@ -32,6 +32,8 @@
 #define WHEEL_DIAMETER 0.077     // meters
 #define WHEEL_DISTANCE 0.23 / 2  // meters
 
+#define MAX_SPEED ((ENCODER_MAX_FREQ_L + ENCODER_MAX_FREQ_R) / 2) * 2 * PI *WHEEL_DIAMETER / ENCODER_RESOLUTION
+
 // PID definition
 
 #define LS_PID_KP 1

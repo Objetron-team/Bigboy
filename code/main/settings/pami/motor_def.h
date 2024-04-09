@@ -40,8 +40,9 @@
 #define ENCODER_MAX_FREQ_R 10125 // Hz
 #define WHEEL_DIAMETER 0.035     // meters
 #define WHEEL_DISTANCE 0.12 / 2  // meters
-
 #endif
+
+#define MAX_SPEED ((ENCODER_MAX_FREQ_L + ENCODER_MAX_FREQ_R) / 2) * 2 * PI *WHEEL_DIAMETER / ENCODER_RESOLUTION
 
 // PID definition
 
