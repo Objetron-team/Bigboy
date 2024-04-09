@@ -3,6 +3,7 @@
 #include "BasicTask.hpp"
 
 #define DISTANCE_THRESHOLD 2
+#define TTL_FACTOR 1.2
 
 class MoveTask : public BasicTask
 {
@@ -64,8 +65,10 @@ private:
         Point current_position = positionControler->GetCurrentPoint();
 
         distance_to_target_cm = sqrt(pow(target_position.x - current_position.x, 2) + pow(target_position.y - current_position.y, 2));
-
         distance_to_target_pulse = valueConverter->DistanceCMToPulse(distance_to_target_cm);
+
+        // compute the time to live using MAX_SPEED (m/s) and distance to target (cm), add time to accelerate and decelerate factor
+        time_to_live = (distance_to_target_pulse / (MAX_SPEED_PULSE)) * TTL_FACTOR;
     }
 
 public:
