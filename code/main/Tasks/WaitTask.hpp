@@ -9,9 +9,7 @@ class WaitTask : public BasicTask
 {
 
 private:
-    PositionControler *positionControler;
     DriveControler *driveControler;
-    ValueConverter *valueConverter;
 
     long start_time_second = 0;
 
@@ -52,10 +50,8 @@ private:
     }
 
 public:
-    WaitTask(PositionControler *positionControler, DriveControler *driveControler, ValueConverter *valueConverter)
+    WaitTask(DriveControler *driveControler)
     {
-        this->positionControler = positionControler;
         this->driveControler = driveControler;
-        this->valueConverter = valueConverter;
     }
 };
