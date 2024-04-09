@@ -37,9 +37,6 @@ public:
     }
 
     void Open(){
-        servo_1->write(90);
-        servo_2->write(90);
-        delay(1000);
         servo_1->write(110);
         servo_2->write(80);
         delay(1000);
@@ -48,10 +45,7 @@ public:
     }
 
     void Close(){
-        servo_1->write(90);
-        servo_2->write(90);
-        delay(1000);
-        servo_2->write(100);
+        servo_2->write(103);
         servo_1->write(75);
         delay(1000);
         servo_2->write(90);
