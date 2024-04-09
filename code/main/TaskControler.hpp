@@ -10,20 +10,20 @@
 #include "Tasks/RotateTask.hpp"
 #include "Tasks/WaitTask.hpp"
 
-class TaskControler{
+class TaskControler
+{
 private:
+    PositionControler *positionControler;
+    DriveControler *driveControler;
+    ValueConverter *valueConverter;
 
-    PositionControler* positionControler;
-    DriveControler* driveControler;
-    ValueConverter* valueConverter;
-    
-    BasicTask* current_task;
-
+    BasicTask *current_task;
 
     bool started = false;
     bool auto_mode = false;
 
-    void GoNextTask(){
+    void GoNextTask()
+    {
         positionControler->SoftReset();
 
         current_task = current_task->GetNextTask();
@@ -31,85 +31,101 @@ private:
     }
 
 public:
-    TaskControler(PositionControler* positionControler, DriveControler* driveControler, ValueConverter* valueConverter){
-        
+    TaskControler(PositionControler *positionControler, DriveControler *driveControler, ValueConverter *valueConverter)
+    {
+
         this->positionControler = positionControler;
         this->driveControler = driveControler;
         this->valueConverter = valueConverter;
-        
-        current_task = new MoveTask(positionControler, driveControler, valueConverter, {0,0});
+
+        current_task = new MoveTask(positionControler, driveControler, valueConverter, {0, 0});
         current_task->id = 0;
     }
 
+    void Update()
+    {
 
-    void Update(){
-
-        if(!started){
+        if (!started)
+        {
             return;
         }
 
-        if(auto_mode && current_task->IsDone() && current_task->HasNextTask()){
+        if (auto_mode && current_task->IsDone() && current_task->HasNextTask())
+        {
             GoNextTask();
         }
 
-        if(!current_task->IsDone()){
+        if (!current_task->IsDone())
+        {
             current_task->Update();
         }
 
         positionControler->Update();
     }
 
-    void NextTask(){
-        if(current_task->HasNextTask()){
+    void NextTask()
+    {
+        if (current_task->HasNextTask())
+        {
             GoNextTask();
         }
     }
 
-    BasicTask* GetCurrentTask(){
+    BasicTask *GetCurrentTask()
+    {
         return current_task;
     }
 
-    void AddTask(BasicTask* next_task){
+    void AddTask(BasicTask *next_task)
+    {
         current_task->AddTask(next_task);
     }
 
-    int GetTaskId(){
+    int GetTaskId()
+    {
         return current_task->id;
     }
 
-    int GetNumberOfTask(){
-        BasicTask* task = current_task;
+    int GetNumberOfTask()
+    {
+        BasicTask *task = current_task;
         int count = 0;
-        while(task != NULL){
+        while (task != NULL)
+        {
             count++;
             task = task->GetNextTask();
         }
         return count;
     }
 
-    void Start(){
+    void Start()
+    {
         started = true;
     }
 
-    void Stop(){
+    void Stop()
+    {
         started = false;
     }
 
-    void SetAutoMode(bool auto_mode){
+    void SetAutoMode(bool auto_mode)
+    {
         this->auto_mode = auto_mode;
     }
 
-    void Reset(){
+    void Reset()
+    {
 
         Stop();
 
         positionControler->Reset();
 
-        current_task = new MoveTask(positionControler, driveControler, valueConverter, {0,0});
+        current_task = new MoveTask(positionControler, driveControler, valueConverter, {0, 0});
         current_task->id = 0;
     }
 
-    void Debug(){
+    void Debug()
+    {
         Serial.print("Tasks:");
         Serial.print(GetNumberOfTask());
         Serial.print(",");
@@ -126,8 +142,6 @@ public:
         Serial.print(positionControler->GetCurrentAngle());
         Serial.print(",");
 
-
         current_task->Debug();
     }
-
 };
