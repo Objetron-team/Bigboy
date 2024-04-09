@@ -46,12 +46,12 @@ PIDMotor motorR(MOTOR_R_PIN_1, MOTOR_R_PIN_2, MOTOR_ACCELERATION, MOTOR_MAX_SPEE
 
 ValueConverter valueConverter(ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
 
-DriveControler driveControler( & motorL, & motorR);
-PositionControler positionControler( & driveControler, ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
+DriveControler driveControler(& motorL, & motorR);
+PositionControler positionControler(& driveControler, ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
 
-TaskControler taskControler( & positionControler, & driveControler, & valueConverter);
+TaskControler taskControler(& positionControler, & driveControler, & valueConverter);
 
-PositionTaskBuilder positionTaskBuilder( & positionControler, & driveControler, & valueConverter);
+PositionTaskBuilder positionTaskBuilder(& positionControler, & driveControler, & valueConverter);
 
 void setup() { 
     
@@ -99,13 +99,13 @@ void SerialCommande() {
             case 'z':
                 {
                     // create Points array  blue 1
-                    Point points[7] = {
+                    Point points[3] = {
                         {0,0} ,
                         {20,0} ,
                         {20, -90} ,
                     };
                     
-                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,7);
+                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,3);
                     
                     taskControler.AddTask(task);
                     break;
@@ -113,13 +113,13 @@ void SerialCommande() {
                 case's':
                 {
                     // create Points array bleu 2
-                    Point points[7] = {
+                    Point points[3] = {
                         {0,0} ,
                         {75,0} ,
                         {75, 140} ,
                     };
                     
-                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,7);
+                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,3);
                     
                     taskControler.AddTask(task);
                     break;
@@ -127,13 +127,13 @@ void SerialCommande() {
                 case'q':
                 {
                     // create Points array yellow 1
-                    Point points[7] = {
+                    Point points[3] = {
                         {0,0} ,
                         {20,0} ,
                         {20, 90} ,
                     };
                     
-                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,7);
+                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,3);
                     
                     taskControler.AddTask(task);
                     break;
@@ -141,13 +141,13 @@ void SerialCommande() {
                 case'd':
                 {
                     // create Points array yellow 2
-                    Point points[7] = {
+                    Point points[3] = {
                         {0,0} ,
                         {75,0} ,
                         {75, -140} ,
                     };
                     
-                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,7);
+                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,3);
                     
                     taskControler.AddTask(task);
                     break;
@@ -274,7 +274,7 @@ void loop() {
     #endif
     
     taskControler.Update();
-    //taskControler.Debug();
+    taskControler.Debug();
     
     //driveControler.Debug();
     
