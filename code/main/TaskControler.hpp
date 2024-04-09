@@ -54,6 +54,10 @@ public:
         {
             GoNextTask();
         }
+        else if (auto_mode && current_task->IsDone() && !current_task->HasNextTask())
+        {
+            Stop();
+        }
 
         if (!current_task->IsDone())
         {
