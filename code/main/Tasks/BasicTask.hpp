@@ -53,6 +53,10 @@ public:
         Serial.print(id);
         Serial.print(",");
 
+        Serial.print("TTL:");
+        Serial.print(time_to_live);
+        Serial.print(",");
+
         Serial.print("Start_time:");
         Serial.print(start_time);
         Serial.print(",");
