@@ -47,12 +47,12 @@ PIDMotor motorR(MOTOR_R_PIN_1, MOTOR_R_PIN_2, MOTOR_ACCELERATION, MOTOR_MAX_SPEE
 
 ValueConverter valueConverter(ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
 
-DriveControler driveControler(& motorL, & motorR);
-PositionControler positionControler(& driveControler, ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
+DriveControler driveControler( & motorL, & motorR);
+PositionControler positionControler( & driveControler, ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
 
-TaskControler taskControler(& positionControler, & driveControler, & valueConverter);
+TaskControler taskControler( & positionControler, & driveControler, & valueConverter);
 
-PositionTaskBuilder positionTaskBuilder(& positionControler, & driveControler, & valueConverter);
+PositionTaskBuilder positionTaskBuilder( & positionControler, & driveControler, & valueConverter);
 
 void setup() { 
     
@@ -100,13 +100,12 @@ void SerialCommande() {
             case 'z':
                 {
                     // create Points array  blue 1
-                    Point points[3] = {
+                    Point points[2] = {
                         {0,0} ,
-                        {20,0} ,
                         {20, -90} ,
                     };
                     
-                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,3);
+                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,2);
                     
                     taskControler.AddTask(task);
                     break;
@@ -114,13 +113,12 @@ void SerialCommande() {
                 case's':
                 {
                     // create Points array bleu 2
-                    Point points[3] = {
+                    Point points[2] = {
                         {0,0} ,
-                        {75,0} ,
                         {75, 140} ,
                     };
                     
-                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,3);
+                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,2);
                     
                     taskControler.AddTask(task);
                     break;
