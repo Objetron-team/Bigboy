@@ -2,8 +2,8 @@
 
 #include "BasicTask.hpp"
 
-#define DISTANCE_THRESHOLD 2
-#define TTL_FACTOR 1.2
+#define DISTANCE_THRESHOLD 5 // cm
+#define TTL_FACTOR 5000
 
 class MoveTask : public BasicTask
 {
