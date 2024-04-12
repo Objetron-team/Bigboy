@@ -1,9 +1,18 @@
+#pragma once
+
 #include <Arduino.h>;
 
 #define SOUND_SPEED 340.0 / 1000 // mm/s
 #define MEASURE_TIMEOUT 25000UL
 #define MEASURE_INTERVAL 10
 #define OUT_OF_RANGE 1000000
+
+enum RadarPosition
+{
+    LEFT,
+    RIGHT,
+    FRONT
+};
 
 class Radar
 {
