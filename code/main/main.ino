@@ -99,120 +99,113 @@ void SerialCommande()
         String commande = SerialBT.readStringUntil('\n');
         // String commande = Serial.readStringUntil('\n');
         char commande_type = commande.charAt(0);
+        
+        switch(commande_type) {
+            case 'z':
+                {
+                    // create Points array  blue 1
+                    Point points[2] = {
+                        {0,0} ,
+                        {20, -90} ,
+                    };
+                    
+                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,2);
+                    
+                    taskControler.AddTask(task);
+                    break;
+                }
+                case's':
+                {
+                    // create Points array bleu 2
+                    Point points[2] = {
+                        {0,0} ,
+                        {75, 140} ,
+                    };
+                    
+                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,2);
+                    
+                    taskControler.AddTask(task);
+                    break;
+                }
+                case'q':
+                {
+                    // create Points array yellow 1
+                    Point points[3] = {
+                        {0,0} ,
+                        {20,0} ,
+                        {20, 90} ,
+                    };
+                    
+                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,3);
+                    
+                    taskControler.AddTask(task);
+                    break;
+                }
+                case'd':
+                {
+                    // create Points array yellow 2
+                    Point points[3] = {
+                        {0,0} ,
+                        {75,0} ,
+                        {75, -140} ,
+                    };
+                    
+                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,3);
+                    
+                    taskControler.AddTask(task);
+                    break;
+                }
+                case'e':
+                #if IS_MAIN
+                    myClaw.Open();
+                #endif
+                break;
+            case 'a':
+                #if IS_MAIN
+                    myClaw.Close();
+                #endif
+                break;
+            
+            case 'b':
+                {
+                    // create Points array
+                    Point points[7] = {
+                        {0,0} ,
+                        //{40,0},
+                        {80,0} ,
+                        {80,40} ,
+                        {40,40} ,
+                        {40,0} ,
+                        {0,0}
+                    };
+                    
+                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,7);
+                    
+                    taskControler.AddTask(task);
+                    break;
+                }
+                case'y':
+                taskControler.SetAutoMode(true);
+                break;
+            case 'h':
+                taskControler.SetAutoMode(false);
+                break;
+            case 'o':
+                taskControler.Start();
+                break;
+            case 'p':
+                taskControler.Stop();
+                break;
+            case 'n':
+                taskControler.NextTask();
+                break;
+            case 'r':
+                taskControler.Reset();
+                break;
+            
+            default:
 
-        switch (commande_type)
-        {
-        case 'z':
-        {
-            // create Points array  blue 1
-            Point points[3] = {
-                {0, 0},
-                {20, 0},
-                {20, -90},
-            };
-
-            BasicTask *task = positionTaskBuilder.CreateTasksFromPoints(points, 3);
-
-            taskControler.AddTask(task);
-            break;
-        }
-        case 's':
-        {
-            // create Points array bleu 2
-            Point points[3] = {
-                {0, 0},
-                {75, 0},
-                {75, 140},
-            };
-
-            BasicTask *task = positionTaskBuilder.CreateTasksFromPoints(points, 3);
-
-            taskControler.AddTask(task);
-            break;
-        }
-        case 'q':
-        {
-            // create Points array yellow 1
-            Point points[3] = {
-                {0, 0},
-                {20, 0},
-                {20, 90},
-            };
-
-            BasicTask *task = positionTaskBuilder.CreateTasksFromPoints(points, 3);
-
-            taskControler.AddTask(task);
-            break;
-        }
-        case 'd':
-        {
-            // create Points array yellow 2
-            Point points[3] = {
-                {0, 0},
-                {75, 0},
-                {75, -140},
-            };
-
-            BasicTask *task = positionTaskBuilder.CreateTasksFromPoints(points, 3);
-
-            taskControler.AddTask(task);
-            break;
-        }
-        case 'e':
-            #if IS_MAIN
-                myClaw.Open();
-            #endif
-            break;
-        case 'a':
-            #if IS_MAIN
-               myClaw.Close();
-            #endif
-            break;
-
-        case 'b':
-        {
-            // create Points array
-            Point points[7] = {
-                {0, 0},
-                //{40,0},
-                {80, 0},
-                {80, 40},
-                {40, 40},
-                {40, 0},
-                {0, 0}};
-
-            BasicTask *task = positionTaskBuilder.CreateTasksFromPoints(points, 7);
-
-            taskControler.AddTask(task);
-            break;
-        }
-        case 'y':
-            taskControler.SetAutoMode(true);
-            break;
-        case 'h':
-            taskControler.SetAutoMode(false);
-            break;
-        case 'o':
-            taskControler.Start();
-            break;
-        case 'p':
-            taskControler.Stop();
-            break;
-        case 'n':
-            taskControler.NextTask();
-            break;
-        case 'r':
-            taskControler.Reset();
-            break;
-
-        case 't':
-            myArm.Open();
-            break;
-        case 'g':
-            myArm.Close();
-            break;
-        default:
-            break;
+              break;
         }
     }
 }
