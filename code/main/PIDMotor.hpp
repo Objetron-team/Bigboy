@@ -291,9 +291,9 @@ public:
 
     void UrgentStop()
     {
-        SetMotorSpeendAndDir(0);
         SetSpeed(0);
-        SetSpeed_with_ramp(0);
+        Update();
+        SetMotorSpeendAndDir(0);
     }
 
     double GetPID_target()
