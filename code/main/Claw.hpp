@@ -1,4 +1,4 @@
-
+#pragma once
 #include <ESP32Servo.h>
 
 class Claw{
@@ -7,7 +7,7 @@ private:
     Servo* servo_1;
     Servo* servo_2;
 
-    int CLAW_TIME;
+    int claw_time;
 
     int pin_1;
     int pin_2;
@@ -17,19 +17,7 @@ private:
     long open_time;
     long current_time;
 
-    void RunMotor(int direction){
-
-        if(current_time - open_time < CLAW_TIME){
-
-            servo_1->write(200 * direction);
-            servo_2->write(200 * direction);
-
-        }
-        else{
-            servo_1->write(0);
-            servo_2->write(0);
-        }
-    }
+    
 
 public:
     Claw(int pin_1, int pin_2, int time){
@@ -39,7 +27,7 @@ public:
         this->pin_1 = pin_1;
         this->pin_2 = pin_2;
 
-        CLAW_TIME = time;
+        claw_time = time;
     }
 
 
@@ -49,7 +37,6 @@ public:
     }
 
     void Open(){
-
         servo_1->write(110);
         servo_2->write(80);
         delay(1000);
@@ -58,7 +45,6 @@ public:
     }
 
     void Close(){
-
         servo_2->write(103);
         servo_1->write(75);
         delay(1000);
@@ -69,7 +55,6 @@ public:
 
     void Update(){
         current_time = millis();
-        RunMotor(direction);
     }
 
 };
