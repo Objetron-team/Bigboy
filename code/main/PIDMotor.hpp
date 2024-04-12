@@ -293,6 +293,7 @@ public:
     {
         SetSpeed(0);
         Update();
+        current_speed = 0;
         SetMotorSpeendAndDir(0);
     }
 
