@@ -1,7 +1,7 @@
 #define SAMPLE_TIME 15
 
 #define IS_MAIN false
-#define PAMI_TYPE 1 // 0 -> noir 1 -> gris
+#define PAMI_TYPE 0 // 0 -> noir 1 -> gris
 
 #if IS_MAIN
     #include "settings/main/motor_def.h";
@@ -109,7 +109,7 @@ void SerialCommande()
                     // create Points array  blue 1
                     Point points[2] = {
                         {0,0} ,
-                        {20, -100} ,
+                        {10, -100} ,
                     };
                     
                     BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,2);
@@ -120,12 +120,13 @@ void SerialCommande()
                 case's':
                 {
                     // create Points array bleu 2
-                    Point points[2] = {
+                    Point points[3] = {
                         {0,0} ,
-                        {75, 160} ,
+                        {10,0} ,
+                        {100, 160} ,
                     };
                     
-                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,2);
+                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,3);
                     
                     taskControler.AddTask(task);
                     break;
@@ -146,12 +147,13 @@ void SerialCommande()
                 case'd':
                 {
                     // create Points array yellow 2
-                    Point points[2] = {
+                    Point points[3] = {
                         {0,0} ,
+                        {10,0} ,
                         {75, -160} ,
                     };
                     
-                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,2);
+                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,3);
                     
                     taskControler.AddTask(task);
                     break;
