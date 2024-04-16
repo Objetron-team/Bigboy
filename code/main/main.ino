@@ -1,7 +1,7 @@
 #define SAMPLE_TIME 15
 
-#define IS_MAIN false
-#define PAMI_TYPE 0 // 0 -> noir 1 -> gris
+#define IS_MAIN true
+#define PAMI_TYPE 1 // 0 -> noir 1 -> gris
 
 #if IS_MAIN
     #include "settings/main/motor_def.h";
@@ -17,6 +17,11 @@
 #include "settings/pami/radar.h";
 #endif
 
+struct Command
+{
+    int value; // Replace with your command data type and structure
+};
+
 #include "PIDMotor.hpp"
 #include "DriveControler.hpp"
 #include "PositionControler.hpp"
@@ -26,16 +31,21 @@
 #include "Claw.hpp"
 #include "Radar.hpp"
 #include "PositionTaskBuilder.hpp"
+#include "CommandServer.hpp"
+//#include "CommandClient.hpp"
 
 
 #if IS_MAIN
     Arm myArm(PIN_ARM, ARM_TIME);
 Claw myClaw(PIN_CLAW_1, PIN_CLAW_2, CLAW_TIME);
+
+CommandeServer commandeServer(DEVICE_NAME);
+
 #else
     Radar radar(TRIGGER_PIN, ECHO_PIN);
-#endif
 
-BluetoothSerial SerialBT;
+//CommandClient commandClient(DEVICE_NAME);
+#endif
 
 #define RXp2 16
 #define TXp2 17
@@ -50,24 +60,30 @@ PIDMotor motorR(MOTOR_R_PIN_1, MOTOR_R_PIN_2, MOTOR_ACCELERATION, MOTOR_MAX_SPEE
 
 ValueConverter valueConverter(ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
 
-DriveControler driveControler(& motorL, & motorR);
-PositionControler positionControler(& driveControler, ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
+DriveControler driveControler( & motorL, & motorR);
+PositionControler positionControler( & driveControler, ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
 
-TaskControler taskControler(& positionControler, & driveControler, & valueConverter);
+TaskControler taskControler( & positionControler, & driveControler, & valueConverter);
 
-PositionTaskBuilder positionTaskBuilder(& positionControler, & driveControler, & valueConverter);
+PositionTaskBuilder positionTaskBuilder( & positionControler, & driveControler, & valueConverter);
 
 void setup()
 {
+    
+    Serial.begin(115200);
     
     #if IS_MAIN
         myClaw.Init();
     myArm.Init();
     // Radar setup
     Serial2.begin(9600, SERIAL_8N1, RXp2, TXp2);
+    commandeServer.Init();
+    commandeServer.Start();
     #else
         radar.Init();
-    driveControler.AddRadar( & radar, FRONT);
+    driveControler.AddRadar(& radar, FRONT);
+    //commandClient.Init();
+    
     #endif
     
     // Motor setup
@@ -82,135 +98,13 @@ void setup()
     driveControler.InitPid(DISTANCE_KP, DISTANCE_KI, DISTANCE_KD, ANGLE_KP, ANGLE_KI, ANGLE_KD, SAMPLE_TIME);
     
     
-    
-    Serial.begin(115200);
-    SerialBT.begin(device_name); // Bluetooth device name
-    
     taskControler.SetAutoMode(false);
+    
+    
 }
 
 double global_target = 0;
 double global_target_2 = 0;
-
-void SerialCommande()
-{
-    
-    if (SerialBT.available() > 0)
-    {
-        // if(Serial.available() > 0) {
-        
-        String commande = SerialBT.readStringUntil('\n');
-        // String commande = Serial.readStringUntil('\n');
-        char commande_type = commande.charAt(0);
-        
-        switch(commande_type) {
-            case 'z':
-                {
-                    // create Points array  blue 1
-                    Point points[2] = {
-                        {0,0} ,
-                        {10, -100} ,
-                    };
-                    
-                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,2);
-                    
-                    taskControler.AddTask(task);
-                    break;
-                }
-                case's':
-                {
-                    // create Points array bleu 2
-                    Point points[3] = {
-                        {0,0} ,
-                        {10,0} ,
-                        {100, 160} ,
-                    };
-                    
-                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,3);
-                    
-                    taskControler.AddTask(task);
-                    break;
-                }
-                case'q':
-                {
-                    // create Points array yellow 1
-                    Point points[2] = {
-                        {0,0} ,
-                        {20, 100} ,
-                    };
-                    
-                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,2);
-                    
-                    taskControler.AddTask(task);
-                    break;
-                }
-                case'd':
-                {
-                    // create Points array yellow 2
-                    Point points[3] = {
-                        {0,0} ,
-                        {10,0} ,
-                        {75, -160} ,
-                    };
-                    
-                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,3);
-                    
-                    taskControler.AddTask(task);
-                    break;
-                }
-                case'e':
-                #if IS_MAIN
-                    myClaw.Open();
-                #endif
-                break;
-            case 'a':
-                #if IS_MAIN
-                    myClaw.Close();
-                #endif
-                break;
-            
-            case 'b':
-                {
-                    // create Points array
-                    Point points[6] = {
-                        {0,0} ,
-                        {80,0} ,
-                        {80,40} ,
-                        {40,40} ,
-                        {40,0} ,
-                        {0,0}
-                    };
-                    
-                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,6);
-                    
-                    taskControler.AddTask(task);
-                    break;
-                }
-                case'y':
-                taskControler.SetAutoMode(true);
-                break;
-            case 'h':
-                taskControler.SetAutoMode(false);
-                break;
-            case 'o':
-                taskControler.Start();
-                break;
-            case 'p':
-                taskControler.Stop();
-                break;
-            case 'n':
-                taskControler.NextTask();
-                break;
-            case 'r':
-                taskControler.Reset();
-                break;
-            
-            default:
-            
-            break;
-        }
-    }
-}
 
 int processBuffer()
 {
@@ -253,7 +147,6 @@ int processBuffer()
 
 void loop()
 {
-    SerialCommande();
     
     #if IS_MAIN
         
@@ -276,6 +169,8 @@ void loop()
     {
         processBuffer();
     }
+    
+    commandeServer.Update();
     
     #endif
     
