@@ -25,6 +25,7 @@
 #include <PID_v1.h>
 
 #define NBR_OF_SPEED_MEASUREMENTS 10
+#define PID_ENABLE false
 
 class PIDMotor
 {
@@ -253,9 +254,14 @@ public:
 
     void Update()
     {
+
+#if PID_ENABLE
         input = GetSpeedRelative();
         pid->Compute();
         SetSpeed_with_ramp(output);
+#else
+        SetSpeed_with_ramp(setpoint);
+#endif
     }
 
     void Reset()
