@@ -3,7 +3,7 @@
 #include "BasicTask.hpp"
 
 #define DISTANCE_THRESHOLD 5 // cm
-#define TTL_FACTOR 5000
+#define TTL_FACTOR 300
 
 class MoveTask : public BasicTask
 {
@@ -31,9 +31,11 @@ private:
 
         double distance_to_target = sqrt(pow(target_position.x - current_position.x, 2) + pow(target_position.y - current_position.y, 2));
 
+        Serial.print("Distance_to_target:");
+        Serial.println(distance_to_target);
         return distance_to_target < DISTANCE_THRESHOLD;
     }
-
+    
     void _Debug() override
     {
         Serial.print("Target_x:");

@@ -1,6 +1,6 @@
 #define SAMPLE_TIME 15
 
-#define IS_MAIN false
+#define IS_MAIN true
 #define PAMI_TYPE 0 // 0 -> noir 1 -> gris
 
 #if IS_MAIN
@@ -16,16 +16,23 @@
 #include "settings/pami/bluetooth_config.h";
 #include "settings/pami/radar.h";
 #endif
-
+#include "BluetoothSerial.h"
+BluetoothSerial SerialBT;
 #include "PIDMotor.hpp"
 #include "DriveControler.hpp"
 #include "PositionControler.hpp"
 #include "TaskControler.hpp"
-#include "BluetoothSerial.h"
+
 #include "Arm.hpp"
 #include "Claw.hpp"
 #include "Radar.hpp"
 #include "PositionTaskBuilder.hpp"
+
+#include <LCD-I2C.h>
+#include <Wire.h>
+
+LCD_I2C lcd(0x27, 16, 2);
+int points=0;
 
 
 #if IS_MAIN
@@ -35,7 +42,7 @@ Claw myClaw(PIN_CLAW_1, PIN_CLAW_2, CLAW_TIME);
     Radar radar(TRIGGER_PIN, ECHO_PIN);
 #endif
 
-BluetoothSerial SerialBT;
+
 
 #define RXp2 16
 #define TXp2 17
@@ -44,6 +51,8 @@ const int BUFFER_SIZE = 64; // Adjust the buffer size as needed
 char buffer[BUFFER_SIZE];
 int bufferIndex = 0;
 int number = 100;
+bool competition = true;
+int ok = 1;
 
 PIDMotor motorL(MOTOR_L_PIN_1, MOTOR_L_PIN_2, MOTOR_ACCELERATION, MOTOR_MAX_SPEED, MOTOR_MIN_SPEED, MOTOR_THRESHOLD_SPEED, PAMI_DUAL_MODE);
 PIDMotor motorR(MOTOR_R_PIN_1, MOTOR_R_PIN_2, MOTOR_ACCELERATION, MOTOR_MAX_SPEED, MOTOR_MIN_SPEED, MOTOR_THRESHOLD_SPEED, PAMI_DUAL_MODE);
@@ -62,9 +71,17 @@ void setup()
     
     #if IS_MAIN
         myClaw.Init();
-    myArm.Init();
-    // Radar setup
-    Serial2.begin(9600, SERIAL_8N1, RXp2, TXp2);
+        pinMode(35, INPUT);
+        lcd.begin();
+        lcd.display();
+        lcd.backlight();
+        lcd.setCursor(0, 0);
+        lcd.print("nombre de points:");
+        lcd.setCursor(0, 1);
+        lcd.print(points);
+        myArm.Init();
+        // Radar setup
+        Serial2.begin(9600, SERIAL_8N1, RXp2, TXp2);
     #else
         radar.Init();
     driveControler.AddRadar( & radar, FRONT);
@@ -95,12 +112,11 @@ double global_target_2 = 0;
 void SerialCommande()
 {
     
-    if (SerialBT.available() > 0)
-    {
-        // if(Serial.available() > 0) {
+    //if (SerialBT.available() > 0){
+         if(Serial.available() > 0) {
         
-        String commande = SerialBT.readStringUntil('\n');
-        // String commande = Serial.readStringUntil('\n');
+        //String commande = SerialBT.readStringUntil('\n');
+         String commande = Serial.readStringUntil('\n');
         char commande_type = commande.charAt(0);
         
         switch(commande_type) {
@@ -147,13 +163,14 @@ void SerialCommande()
                 case'd':
                 {
                     // create Points array yellow 2
-                    Point points[3] = {
-                        {0,0} ,
-                        {10,0} ,
-                        {75, -160} ,
+                    Point points[4] = {
+                        {0, 0},
+                        {80, 0},
+                        {80, -130},
+                        {45 , -130},
                     };
                     
-                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,3);
+                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,4);
                     
                     taskControler.AddTask(task);
                     break;
@@ -186,7 +203,7 @@ void SerialCommande()
                     taskControler.AddTask(task);
                     break;
                 }
-                case'y':
+                case 'y':
                 taskControler.SetAutoMode(true);
                 break;
             case 'h':
@@ -229,7 +246,7 @@ int processBuffer()
                 number = parsed_number; // Update the global variable only if a valid number is parsed
             }
             
-            if (number < 30)
+            if (number < 15)
             {
                 driveControler.UrgentStop();
                 taskControler.Stop();
@@ -250,40 +267,70 @@ int processBuffer()
     }
     return parsed_number;
 }
-
+unsigned long startTime = 0;
 void loop()
 {
+    if(ok == 1){
+      unsigned long startTime = millis();
+    myClaw.Open();
+    myArm.Open();
+    }
+
+    while (digitalRead(35) != LOW) {
+        Serial.println("attente");
+    }
+
+    unsigned long currentTime = millis();
+    long TimeUntilStop = currentTime - startTime;
+    if (TimeUntilStop < 90000) {
+    } else {
+        Serial.print("stop");
+        driveControler.UrgentStop();
+        taskControler.Stop();
+    }
+
     SerialCommande();
-    
-    #if IS_MAIN
-        
-        while(Serial2.available() > 0)
+    if (competition == true && ok==1){
+        Point points1[7] = { // rename to points1
+            {0, 0},
+            {80, 0},
+            {80, -50},
+            {80 , -100},
+            {80 , -130},
+            {80 , -135},
+            {43 , -135},
+        };
+
+        BasicTask *task1 = positionTaskBuilder.CreateTasksFromPoints(points1, 7); // rename to task1
+
+        taskControler.AddTask(task1);
+        taskControler.SetAutoMode(true);
+        taskControler.Start();
+        ok = 0;
+    }
+
+    while (Serial2.available() > 0)
     {
         char incomingByte = Serial2.read();
-        
+
         // Store incoming byte in the buffer
         buffer[bufferIndex++] = incomingByte;
-        
+
         // Check if the buffer is full
         if (bufferIndex >= BUFFER_SIZE)
         {
             processBuffer(); // Process the buffer when it's full
         }
     }
-    
+
     // Process remaining data in the buffer
     if (bufferIndex > 0)
     {
         processBuffer();
     }
-    
-    #endif
-    
     taskControler.Update();
-    // taskControler.Debug();
-    
-    // Serial.println(MAX_SPEED_PULSE);
-    
+    //taskControler.Debug();
+
     //driveControler.Debug();
     
     delay(5);

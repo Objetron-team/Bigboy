@@ -25,7 +25,7 @@
 #include <PID_v1.h>
 
 #define NBR_OF_SPEED_MEASUREMENTS 10
-#define PID_ENABLE false
+#define PID_ENABLE true
 
 class PIDMotor
 {

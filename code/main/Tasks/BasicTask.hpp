@@ -22,7 +22,7 @@ public:
     int id = 0;
 
     long start_time = 0;
-    long time_to_live = 5000; // seconds
+    long time_to_live = 10000; // seconds
 
     void Compute()
     {
