@@ -2,7 +2,7 @@
 
 #include "BasicTask.hpp"
 
-#define ANGLE_THRESHOLD 5
+#define ANGLE_THRESHOLD 2
 
 class RotateTask : public BasicTask
 {
@@ -33,15 +33,6 @@ private:
         double current_angle = valueConverter->PulseToAngle(driveControler->GetAngle()); // in degree
 
         double angle_diff = target_angle_degree - current_angle;
-
-        if (angle_diff > 180)
-        {
-            angle_diff -= 360;
-        }
-        else if (angle_diff < -180)
-        {
-            angle_diff += 360;
-        }
 
         return abs(angle_diff) < ANGLE_THRESHOLD;
     }
