@@ -13,7 +13,7 @@
 #define MOTOR_ACCELERATION 75
 #define MOTOR_MAX_SPEED 100
 #define MOTOR_MIN_SPEED 0
-#define MOTOR_THRESHOLD_SPEED 3
+#define MOTOR_THRESHOLD_SPEED 2
 
 //  Dual mode, depending on the motor driver
 #define PAMI_DUAL_MODE true
