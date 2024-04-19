@@ -4,6 +4,9 @@
 #define PAMI_TYPE 0 // 0 -> noir 1 -> gris
 
 #if IS_MAIN
+    
+    #define DEATH_TIME 100 // in s
+    
     #include "settings/main/motor_def.h";
 #include "settings/main/drive_def.h";
 #include "settings/main/bluetooth_config.h";
@@ -11,6 +14,8 @@
 #include "settings/main/claw.h";
 #include "settings/main/arm.h";
 #else
+    #define DEATH_TIME 10 // in s
+    
     #include "settings/pami/motor_def.h";
 #include "settings/pami/drive_def.h";
 #include "settings/pami/bluetooth_config.h";
