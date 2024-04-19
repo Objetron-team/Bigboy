@@ -1,7 +1,7 @@
 #define SAMPLE_TIME 15
 
-#define IS_MAIN true
-#define PAMI_TYPE 1 // 0 -> noir 1 -> gris
+#define IS_MAIN false
+#define PAMI_TYPE 0 // 0 -> noir 1 -> gris
 
 #if IS_MAIN
     #include "settings/main/motor_def.h";
@@ -15,6 +15,7 @@
 #include "settings/pami/drive_def.h";
 #include "settings/pami/bluetooth_config.h";
 #include "settings/pami/radar.h";
+
 #endif
 
 #include "PIDMotor.hpp"
@@ -32,19 +33,7 @@
 #include "ESPNowSlave.hpp"
 
 
-#if IS_MAIN
-    Arm myArm(PIN_ARM, ARM_TIME);
-Claw myClaw(PIN_CLAW_1, PIN_CLAW_2, CLAW_TIME);
 
-ESPNowMaster espNowMaster;
-
-
-#else
-    Radar radar(TRIGGER_PIN, ECHO_PIN);
-
-ESPNowSlave espNowSlave;
-
-#endif
 
 #define RXp2 16
 #define TXp2 17
@@ -65,6 +54,17 @@ PositionControler positionControler( & driveControler, ENCODER_RESOLUTION, WHEEL
 TaskControler taskControler( & positionControler, & driveControler, & valueConverter);
 
 PositionTaskBuilder positionTaskBuilder( & positionControler, & driveControler, & valueConverter);
+
+#if IS_MAIN
+    Arm myArm(PIN_ARM, ARM_TIME);
+Claw myClaw(PIN_CLAW_1, PIN_CLAW_2, CLAW_TIME);
+ESPNowMaster espNowMaster;
+
+#else
+    Radar radar(TRIGGER_PIN, ECHO_PIN);
+ESPNowSlave espNowSlave( & taskControler, & positionTaskBuilder);
+
+#endif
 
 void setup()
 {
