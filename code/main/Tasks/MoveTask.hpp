@@ -2,8 +2,8 @@
 
 #include "BasicTask.hpp"
 
-#define DISTANCE_THRESHOLD 5 // cm
-#define TTL_FACTOR 300
+#define DISTANCE_THRESHOLD 2 // cm
+#define TTL_FACTOR 5000
 
 class MoveTask : public BasicTask
 {
@@ -32,8 +32,9 @@ private:
 
         double distance_error_cm = valueConverter->PulseToDistanceCM(distance_error_pulse);
 
-        return (distance_error_cm < DISTANCE_THRESHOLD);
-    }    
+        return (abs(distance_error_cm) < DISTANCE_THRESHOLD);
+    }
+  
     void _Debug() override
     {
         Serial.print("Target_x:");

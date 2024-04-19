@@ -6,15 +6,21 @@
 
 
 #if IS_MAIN
+    
+    #define DEATH_TIME 100 // in s
+    
     #include "settings/main/motor_def.h";
 #include "settings/main/drive_def.h";
 #include "settings/main/radar.h";
 #include "settings/main/claw.h";
 #include "settings/main/arm.h";
 #else
+    #define DEATH_TIME 10 // in s
+    
     #include "settings/pami/motor_def.h";
 #include "settings/pami/drive_def.h";
 #include "settings/pami/radar.h";
+
 #endif
 
 #include "PIDMotor.hpp"
@@ -28,19 +34,16 @@
 #include "Radar.hpp"
 #include "PositionTaskBuilder.hpp"
 
+
+#include "ESPNowStruct.hpp"
+#include "ESPNowMaster.hpp"
+#include "ESPNowSlave.hpp"
+
 #include <LCD-I2C.h>
 #include <Wire.h>
 
 LCD_I2C lcd(0x27, 16, 2);
 int points=0;
-
-
-#if IS_MAIN
-    Arm myArm(PIN_ARM, ARM_TIME);
-Claw myClaw(PIN_CLAW_1, PIN_CLAW_2, CLAW_TIME);
-#else
-    Radar radar(TRIGGER_PIN, ECHO_PIN);
-#endif
 
 
 
@@ -59,15 +62,28 @@ PIDMotor motorR(MOTOR_R_PIN_1, MOTOR_R_PIN_2, MOTOR_ACCELERATION, MOTOR_MAX_SPEE
 
 ValueConverter valueConverter(ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
 
-DriveControler driveControler(& motorL, & motorR);
-PositionControler positionControler(& driveControler, ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
+DriveControler driveControler( & motorL, & motorR);
+PositionControler positionControler( & driveControler, ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
 
-TaskControler taskControler(& positionControler, & driveControler, & valueConverter);
+TaskControler taskControler( & positionControler, & driveControler, & valueConverter);
 
-PositionTaskBuilder positionTaskBuilder(& positionControler, & driveControler, & valueConverter);
+PositionTaskBuilder positionTaskBuilder( & positionControler, & driveControler, & valueConverter);
+
+#if IS_MAIN
+    Arm myArm(PIN_ARM, ARM_TIME);
+Claw myClaw(PIN_CLAW_1, PIN_CLAW_2, CLAW_TIME);
+ESPNowMaster espNowMaster;
+
+#else
+    Radar radar(TRIGGER_PIN, ECHO_PIN);
+ESPNowSlave espNowSlave( & taskControler, & positionTaskBuilder);
+
+#endif
 
 void setup()
 {
+    
+    Serial.begin(115200);
     
     #if IS_MAIN
         myClaw.Init();
@@ -82,9 +98,13 @@ void setup()
         myArm.Init();
         // Radar setup
         Serial2.begin(9600, SERIAL_8N1, RXp2, TXp2);
+
     #else
         radar.Init();
-    driveControler.AddRadar( & radar, FRONT);
+    
+    espNowSlave.Init();
+    
+    driveControler.AddRadar(& radar, FRONT);
     #endif
     
     // Motor setup
@@ -98,130 +118,13 @@ void setup()
     // DriveControler setup
     driveControler.InitPid(DISTANCE_KP, DISTANCE_KI, DISTANCE_KD, ANGLE_KP, ANGLE_KI, ANGLE_KD, SAMPLE_TIME);
     
-    Serial.begin(115200);
-    
     taskControler.SetAutoMode(false);
+        
 }
 
 double global_target = 0;
 double global_target_2 = 0;
 
-void SerialCommande()
-{
-   
-         if(Serial.available() > 0) {
-        
-         String commande = Serial.readStringUntil('\n');
-        char commande_type = commande.charAt(0);
-        
-        switch(commande_type) {
-            case 'z':
-                {
-                    // create Points array  blue 1
-                    Point points[2] = {
-                        {0,0} ,
-                        {10, -100} ,
-                    };
-                    
-                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,2);
-                    
-                    taskControler.AddTask(task);
-                    break;
-                }
-                case's':
-                {
-                    // create Points array bleu 2
-                    Point points[3] = {
-                        {0,0} ,
-                        {10,0} ,
-                        {100, 160} ,
-                    };
-                    
-                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,3);
-                    
-                    taskControler.AddTask(task);
-                    break;
-                }
-                case'q':
-                {
-                    // create Points array yellow 1
-                    Point points[2] = {
-                        {0,0} ,
-                        {20, 100} ,
-                    };
-                    
-                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,2);
-                    
-                    taskControler.AddTask(task);
-                    break;
-                }
-                case'd':
-                {
-                    // create Points array yellow 2
-                    Point points[4] = {
-                        {0, 0},
-                        {80, 0},
-                        {80, -130},
-                        {45 , -130},
-                    };
-                    
-                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,4);
-                    
-                    taskControler.AddTask(task);
-                    break;
-                }
-                case'e':
-                #if IS_MAIN
-                    myClaw.Open();
-                #endif
-                break;
-            case 'a':
-                #if IS_MAIN
-                    myClaw.Close();
-                #endif
-                break;
-            
-            case 'b':
-                {
-                    // create Points array
-                    Point points[6] = {
-                        {0,0} ,
-                        {80,0} ,
-                        {80,40} ,
-                        {40,40} ,
-                        {40,0} ,
-                        {0,0}
-                    };
-                    
-                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,6);
-                    taskControler.AddTask(task);
-                    break;
-                }
-                case 'y':
-                taskControler.SetAutoMode(true);
-                break;
-            case 'h':
-                taskControler.SetAutoMode(false);
-                break;
-            case 'o':
-                taskControler.Start();
-                break;
-            case 'p':
-                taskControler.Stop();
-                break;
-            case 'n':
-                taskControler.NextTask();
-                break;
-            case 'r':
-                taskControler.Reset();
-                break;
-            
-            default:
-            
-            break;
-        }
-    }
-}
 
 int processBuffer()
 {
@@ -264,6 +167,10 @@ int processBuffer()
 unsigned long startTime = 0;
 void loop()
 {
+
+    
+    #if IS_MAIN
+
     if(ok == 1){
       unsigned long startTime = millis();
     myArm.Open();
@@ -295,7 +202,8 @@ void loop()
 
 
         //BasicTask *task3 = positionTaskBuilder.CreateTasksFromPoints(points3, 2); 
-        ReverseTask *task4 = new ReverseTask(&driveControler, &valueConverter);
+        ReverseTask *task4 = new ReverseTask(&driveControler, &valueConverter,30);
+
         
         Point points5[7] = { 
             {60,-42},
@@ -337,9 +245,8 @@ void loop()
     {
         processBuffer();
     }
-    taskControler.Update();
-    // taskControler.Debug();
-    lcd.setCursor(0, 0);
+  
+   lcd.setCursor(0, 0);
     lcd.print("x:");
     lcd.print(positionControler.GetCurrentPoint().x);
     lcd.setCursor(0, 1);
@@ -348,7 +255,14 @@ void loop()
     lcd.setCursor(0, 2);
     lcd.print("current angle:");
     lcd.print(positionControler.GetCurrentAngle());
-    // driveControler.Debug();
+
+    
+    espNowMaster.Update();
+    
+    #endif
+    
+    taskControler.Update();
+    
     
     delay(5);
 }

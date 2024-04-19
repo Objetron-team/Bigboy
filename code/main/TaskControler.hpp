@@ -24,6 +24,8 @@ private:
     bool started = false;
     bool auto_mode = false;
 
+    long start_time = 0;
+
     void GoNextTask()
     {
         positionControler->SoftReset();
@@ -49,6 +51,13 @@ public:
 
         if (!started)
         {
+            Stop();
+            return;
+        }
+
+        if (millis() - start_time > DEATH_TIME * 1000)
+        {
+            Stop();
             return;
         }
 
@@ -107,10 +116,12 @@ public:
     void Start()
     {
         started = true;
+        start_time = millis();
     }
 
     void Stop()
     {
+        positionControler->SoftReset();
         started = false;
     }
 
@@ -121,7 +132,6 @@ public:
 
     void Reset()
     {
-
         Stop();
 
         positionControler->Reset();
