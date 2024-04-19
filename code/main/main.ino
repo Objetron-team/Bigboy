@@ -59,12 +59,12 @@ PIDMotor motorR(MOTOR_R_PIN_1, MOTOR_R_PIN_2, MOTOR_ACCELERATION, MOTOR_MAX_SPEE
 
 ValueConverter valueConverter(ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
 
-DriveControler driveControler(& motorL, & motorR);
-PositionControler positionControler(& driveControler, ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
+DriveControler driveControler( & motorL, & motorR);
+PositionControler positionControler( & driveControler, ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
 
-TaskControler taskControler(& positionControler, & driveControler, & valueConverter);
+TaskControler taskControler( & positionControler, & driveControler, & valueConverter);
 
-PositionTaskBuilder positionTaskBuilder(& positionControler, & driveControler, & valueConverter);
+PositionTaskBuilder positionTaskBuilder( & positionControler, & driveControler, & valueConverter);
 
 void setup()
 {
@@ -84,7 +84,7 @@ void setup()
     Serial2.begin(9600, SERIAL_8N1, RXp2, TXp2);
     #else
         radar.Init();
-    driveControler.AddRadar( & radar, FRONT);
+    driveControler.AddRadar(& radar, FRONT);
     #endif
     
     // Motor setup
@@ -135,8 +135,8 @@ void SerialCommande() {
         }
         
         driveControler.Reset();
-        driveControler.SetDistance(global_target);
-        driveControler.SetAngle(global_target_2);
+        driveControler.SetDistance(valueConverter.DistanceCMToPulse(global_target));
+        driveControler.SetAngle(valueConverter.AngleToPulse(global_target_2));
     }
 }
 
