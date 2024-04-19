@@ -40,8 +40,8 @@
 #include "ESPNowMaster.hpp"
 #include "ESPNowSlave.hpp"
 
-#include < LCD - I2C.h>
-#include < Wire.h>
+#include <LCD-I2C.h>
+#include <Wire.h>
 
 LCD_I2C lcd(0x27, 16, 2);
 int points = 0;
@@ -209,15 +209,15 @@ int processBuffer()
             if (number < 15)
             {
                 driveControler.UrgentStop();
-                taskControler.Stop();
+                
             }
             else
             {
-                taskControler.Start();
+                
             }
-            Serial.println();
-            Serial.write(buffer, i + 1); // Print the message until the newline character
-            Serial.println();
+            //Serial.println();
+            //Serial.write(buffer, i + 1); // Print the message until the newline character
+            //Serial.println();
             
             // Move remaining data to the beginning of the buffer
             memmove(buffer, buffer + i + 1, bufferIndex - i - 1);
@@ -256,32 +256,29 @@ void loop()
     if (competition == true && ok ==  1) {
         
         espNowMaster.Start();
-        
         Point points1[4] = { 
-            {0, 0} ,
-            {85, 0} ,
-            {87 , -125} ,
-            {33 , -140} ,
+            {0, 0},
+            {87, 0},
+            {87 , -145},
+            {35 , -145},
         };
-        BasicTask * task1 = positionTaskBuilder.CreateTasksFromPoints(points1, 4); 
+        BasicTask *task1 = positionTaskBuilder.CreateTasksFromPoints(points1, 4); 
         //ClawTask *task2 = new ClawTask(&myClaw);
-        
-        
+
+
         //BasicTask *task3 = positionTaskBuilder.CreateTasksFromPoints(points3, 2); 
-        ReverseTask * task4 = new ReverseTask(& driveControler, & valueConverter,30);
+        ReverseTask *task4 = new ReverseTask(&driveControler, &valueConverter,30);
         
-        
-        Point points5[7] = { 
-            {60, -42} ,
-            {100, -42} ,
-            {120, -42} ,
-            {150,0} ,
-            {180,0} ,
-            {200,10} ,
-            {240,10} ,
+        Point points5[6] = { 
+            {60,-42},
+            {100,-22},
+            {120,0},
+            {180,0},
+            {190,0},
+            {230,5},
         };
         
-        BasicTask * task5 = positionTaskBuilder.CreateTasksFromPoints(points5, 7); 
+        BasicTask * task5 = positionTaskBuilder.CreateTasksFromPoints(points5, 6); 
         taskControler.AddTask(task1);
         //taskControler.AddTask(task2);
         //taskControler.AddTask(task3);
@@ -328,6 +325,7 @@ void loop()
     #endif
     
     taskControler.Update();
+    //taskControler.Debug();
     
     
     delay(5);

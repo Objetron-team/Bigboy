@@ -142,22 +142,22 @@ public:
 
     void Debug()
     {
-        //Serial.print("Tasks:");
-        //Serial.print(GetNumberOfTask());
-        //Serial.print(",");
-
-        Serial.print("X:");
-        Serial.print(positionControler->GetCurrentPoint().x);
+        Serial.print("Tasks:");
+        Serial.print(GetNumberOfTask());
         Serial.print(",");
 
-        Serial.print("Y:");
-        Serial.println(positionControler->GetCurrentPoint().y);
+        //Serial.print("X:");
+        //Serial.print(positionControler->GetCurrentPoint().x);
+        //Serial.print(",");
+//
+        //Serial.print("Y:");
+        //Serial.println(positionControler->GetCurrentPoint().y);
         //Serial.print(",")//;
 //
         //Serial.print("cur_angle:");
         //Serial.print(positionControler->GetCurrentAngle());
         //Serial.print(",");
 //
-        //current_task->Debug();
+        current_task->Debug();
     }
 };

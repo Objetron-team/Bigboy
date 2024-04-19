@@ -42,7 +42,7 @@ public:
         return new ReverseTask(driveControler, valueConverter, distance_cm);
     }
 
-    BasicTask *MoveToPointTask(Point target)
+    BasicTask *MoveToPointTask(Point target){
 
         BasicTask *first_task = CreateRotateTask(target);
         MoveTask *move_task = CreateMoveTask(target);
