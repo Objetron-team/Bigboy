@@ -43,7 +43,7 @@ public:
     }
 
     BasicTask *MoveToPointTask(Point target)
-    {
+
         BasicTask *first_task = CreateRotateTask(target);
         MoveTask *move_task = CreateMoveTask(target);
 

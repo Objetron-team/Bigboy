@@ -19,11 +19,11 @@ private:
     void _Update() override
     {
         driveControler->SetDistance(distance_to_target_pulse);
-        driveControler->SetAngle(0);
     }
 
     bool _IsDone() override
     {
+
         double current_distance_pulse = driveControler->GetDistance();
         double distance_error_pulse = (distance_to_target_pulse)-current_distance_pulse;
 
@@ -53,6 +53,7 @@ private:
         Serial.print("Target_distance_pulse:");
         Serial.println(distance_to_target_pulse);
     }
+    
 
     void _Compute() override
     {
@@ -60,11 +61,13 @@ private:
     }
 
 public:
+
     ReverseTask(DriveControler *driveControler, ValueConverter *valueConverter, double distance_cm)
+
     {
         this->driveControler = driveControler;
         this->valueConverter = valueConverter;
-
+        
         distance_to_target_cm = -distance_cm;
         distance_to_target_pulse = valueConverter->DistanceCMToPulse(distance_to_target_cm);
     }

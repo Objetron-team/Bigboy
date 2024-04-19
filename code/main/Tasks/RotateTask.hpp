@@ -2,7 +2,9 @@
 
 #include "BasicTask.hpp"
 
+
 #define ANGLE_THRESHOLD 2
+
 
 class RotateTask : public BasicTask
 {

@@ -1,7 +1,9 @@
 #define SAMPLE_TIME 15
 
-#define IS_MAIN false
+#define IS_MAIN true
 #define PAMI_TYPE 0 // 0 -> noir 1 -> gris
+
+
 
 #if IS_MAIN
     
@@ -9,7 +11,6 @@
     
     #include "settings/main/motor_def.h";
 #include "settings/main/drive_def.h";
-#include "settings/main/bluetooth_config.h";
 #include "settings/main/radar.h";
 #include "settings/main/claw.h";
 #include "settings/main/arm.h";
@@ -18,7 +19,6 @@
     
     #include "settings/pami/motor_def.h";
 #include "settings/pami/drive_def.h";
-#include "settings/pami/bluetooth_config.h";
 #include "settings/pami/radar.h";
 
 #endif
@@ -27,16 +27,23 @@
 #include "DriveControler.hpp"
 #include "PositionControler.hpp"
 #include "TaskControler.hpp"
-#include "BluetoothSerial.h"
+
+
 #include "Arm.hpp"
 #include "Claw.hpp"
 #include "Radar.hpp"
 #include "PositionTaskBuilder.hpp"
 
+
 #include "ESPNowStruct.hpp"
 #include "ESPNowMaster.hpp"
 #include "ESPNowSlave.hpp"
 
+#include <LCD-I2C.h>
+#include <Wire.h>
+
+LCD_I2C lcd(0x27, 16, 2);
+int points=0;
 
 
 
@@ -47,6 +54,8 @@ const int BUFFER_SIZE = 64; // Adjust the buffer size as needed
 char buffer[BUFFER_SIZE];
 int bufferIndex = 0;
 int number = 100;
+bool competition = true;
+int ok = 1;
 
 PIDMotor motorL(MOTOR_L_PIN_1, MOTOR_L_PIN_2, MOTOR_ACCELERATION, MOTOR_MAX_SPEED, MOTOR_MIN_SPEED, MOTOR_THRESHOLD_SPEED, PAMI_DUAL_MODE);
 PIDMotor motorR(MOTOR_R_PIN_1, MOTOR_R_PIN_2, MOTOR_ACCELERATION, MOTOR_MAX_SPEED, MOTOR_MIN_SPEED, MOTOR_THRESHOLD_SPEED, PAMI_DUAL_MODE);
@@ -78,12 +87,18 @@ void setup()
     
     #if IS_MAIN
         myClaw.Init();
-    myArm.Init();
-    // Radar setup
-    Serial2.begin(9600, SERIAL_8N1, RXp2, TXp2);
-    
-    
-    
+        pinMode(35, INPUT);
+        lcd.begin();
+        lcd.display();
+        lcd.backlight();
+        //lcd.setCursor(0, 0);
+        //lcd.print("nombre de points:");
+        //lcd.setCursor(0, 1);
+        //lcd.print(points);
+        myArm.Init();
+        // Radar setup
+        Serial2.begin(9600, SERIAL_8N1, RXp2, TXp2);
+
     #else
         radar.Init();
     
@@ -103,14 +118,13 @@ void setup()
     // DriveControler setup
     driveControler.InitPid(DISTANCE_KP, DISTANCE_KI, DISTANCE_KD, ANGLE_KP, ANGLE_KI, ANGLE_KD, SAMPLE_TIME);
     
-    
     taskControler.SetAutoMode(false);
-    
-    
+        
 }
 
 double global_target = 0;
 double global_target_2 = 0;
+
 
 int processBuffer()
 {
@@ -129,7 +143,7 @@ int processBuffer()
                 number = parsed_number; // Update the global variable only if a valid number is parsed
             }
             
-            if (number < 30)
+            if (number < 15)
             {
                 driveControler.UrgentStop();
                 taskControler.Stop();
@@ -150,31 +164,98 @@ int processBuffer()
     }
     return parsed_number;
 }
-
+unsigned long startTime = 0;
 void loop()
 {
+
     
     #if IS_MAIN
+
+    if(ok == 1){
+      unsigned long startTime = millis();
+    myArm.Open();
+    }
+
+    while (digitalRead(35) != LOW) {
+        Serial.println("attente");
+    }
+
+    unsigned long currentTime = millis();
+    long TimeUntilStop = currentTime - startTime;
+    if (TimeUntilStop < 90000) {
+    } else {
+        Serial.print("stop");
+        driveControler.UrgentStop();
+        taskControler.Stop();
+    }
+
+    //SerialCommande();
+    if (competition == true && ok==1){
+        Point points1[4] = { 
+            {0, 0},
+            {85, 0},
+            {87 , -125},
+            {33 , -140},
+        };
+        BasicTask *task1 = positionTaskBuilder.CreateTasksFromPoints(points1, 4); 
+        //ClawTask *task2 = new ClawTask(&myClaw);
+
+
+        //BasicTask *task3 = positionTaskBuilder.CreateTasksFromPoints(points3, 2); 
+        ReverseTask *task4 = new ReverseTask(&driveControler, &valueConverter,30);
+
         
-        while(Serial2.available() > 0)
+        Point points5[7] = { 
+            {60,-42},
+            {100,-42},
+            {120,-42},
+            {150,0},
+            {180,0},
+            {200,10},
+            {240,10},
+        };
+
+        BasicTask *task5 = positionTaskBuilder.CreateTasksFromPoints(points5, 7 ); 
+        taskControler.AddTask(task1);
+        //taskControler.AddTask(task2);
+        //taskControler.AddTask(task3);
+        taskControler.AddTask(task4);
+        taskControler.AddTask(task5);
+        taskControler.SetAutoMode(true);
+        taskControler.Start();
+        ok = 0;
+    }
+
+    while (Serial2.available() > 0)
     {
         char incomingByte = Serial2.read();
-        
+
         // Store incoming byte in the buffer
         buffer[bufferIndex++] = incomingByte;
-        
+
         // Check if the buffer is full
         if (bufferIndex >= BUFFER_SIZE)
         {
             processBuffer(); // Process the buffer when it's full
         }
     }
-    
+
     // Process remaining data in the buffer
     if (bufferIndex > 0)
     {
         processBuffer();
     }
+  
+   lcd.setCursor(0, 0);
+    lcd.print("x:");
+    lcd.print(positionControler.GetCurrentPoint().x);
+    lcd.setCursor(0, 1);
+    lcd.print("y:");
+    lcd.print(positionControler.GetCurrentPoint().y);
+    lcd.setCursor(0, 2);
+    lcd.print("current angle:");
+    lcd.print(positionControler.GetCurrentAngle());
+
     
     espNowMaster.Update();
     
