@@ -1,12 +1,7 @@
-//#define USE_PIN // Uncomment this to use PIN during pairing. The pin is specified on the line below
-const char *pin = "1234"; // Change this to more secure PIN.
+#define DEVICE_NAME "MyBigBoi"
 
-String device_name = "MyBigBoi";
+// Define the service UUID (replace with your desired UUID)
+#define SERVICE_UUID "00001234-0000-1000-8000-ABCDEF123456"
 
-#if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
-#error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
-#endif
-
-#if !defined(CONFIG_BT_SPP_ENABLED)
-#error Serial Bluetooth not available or not enabled. It is only available for the ESP32 chip.
-#endif
+// Define the characteristic UUID (replace with your desired UUID)
+#define CHARACTERISTIC_UUID "00002345-0000-1000-8000-ABCDEF678901"

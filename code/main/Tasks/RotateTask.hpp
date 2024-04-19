@@ -2,7 +2,9 @@
 
 #include "BasicTask.hpp"
 
-#define ANGLE_THRESHOLD 4
+
+#define ANGLE_THRESHOLD 2
+
 
 class RotateTask : public BasicTask
 {
@@ -34,16 +36,6 @@ private:
 
         double angle_diff = target_angle_degree - current_angle;
 
-        if (angle_diff > 180)
-        {
-            angle_diff -= 360;
-        }
-        else if (angle_diff < -180)
-        {
-            angle_diff += 360;
-        }
-        Serial.print("Angle_diff:");
-        Serial.println(angle_diff);
         return abs(angle_diff) < ANGLE_THRESHOLD;
     }
 
