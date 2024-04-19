@@ -32,7 +32,7 @@ private:
 
         double distance_error_cm = valueConverter->PulseToDistanceCM(distance_error_pulse);
 
-        return (distance_error_cm < DISTANCE_THRESHOLD);
+        return (abs(distance_error_cm) < DISTANCE_THRESHOLD);
     }
 
     void _Debug() override
