@@ -12,10 +12,10 @@ class ClawTask : public BasicTask
 private:
     
     Claw *myClaw;
-
+int idd;
     void _Update() override
     {
-        
+        Serial.print("");
     }
 
     bool _IsDone() override
@@ -26,18 +26,24 @@ private:
     
     void _Debug() override
     {
-      
+      Serial.print("");
     }
 
     void _Compute() override
     {
-       myClaw->Close();
+        if (idd == 0){
+            myClaw->Open();
+        }
+        else{
+            myClaw->Close();
+        }
     }
 
 public:
-    ClawTask( Claw *claw)
+    ClawTask( Claw *claw, int id)
     {
         myClaw = claw;
+        this->idd = id;
     }
     
         

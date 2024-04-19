@@ -72,7 +72,7 @@ PositionTaskBuilder positionTaskBuilder( & positionControler, & driveControler, 
 
 #if IS_MAIN
     Arm myArm(PIN_ARM, ARM_TIME);
-Claw myClaw(PIN_CLAW_1, PIN_CLAW_2, CLAW_TIME);
+    Claw myClaw(PIN_CLAW_1, PIN_CLAW_2, CLAW_TIME);
 ESPNowMaster espNowMaster;
 
 #else
@@ -252,23 +252,29 @@ void loop()
         taskControler.Stop();
     }
     
-    //SerialCommande();
     if (competition == true && ok ==  1) {
         
         espNowMaster.Start();
-        Point points1[4] = { 
+        Point points1[2] = { 
             {0, 0},
             {87, 0},
-            {87 , -145},
-            {35 , -145},
         };
-        BasicTask *task1 = positionTaskBuilder.CreateTasksFromPoints(points1, 4); 
-        //ClawTask *task2 = new ClawTask(&myClaw);
-
-
-        //BasicTask *task3 = positionTaskBuilder.CreateTasksFromPoints(points3, 2); 
-        ReverseTask *task4 = new ReverseTask(&driveControler, &valueConverter,30);
-        
+        BasicTask *task1 = positionTaskBuilder.CreateTasksFromPoints(points1, 2); 
+        ClawTask *task2 = new ClawTask(&myClaw, 0);
+        Point points2[2] = { 
+            {87, 50},
+            {87 , -130},
+        };   
+        BasicTask *task3 = positionTaskBuilder.CreateTasksFromPoints(points2, 2);
+        ClawTask *task4 = new ClawTask(&myClaw, 1); 
+        Point points3[2] = {
+            {87,  -140},
+            {35 , -150},
+        };
+        BasicTask *task5 = positionTaskBuilder.CreateTasksFromPoints(points3, 2);
+        ClawTask *task6 = new ClawTask(&myClaw, 0);
+        ReverseTask *task7 = new ReverseTask(&driveControler, &valueConverter,30);
+        ClawTask *task8 = new ClawTask(&myClaw, 1);
         Point points5[6] = { 
             {60,-42},
             {100,-22},
@@ -278,12 +284,16 @@ void loop()
             {230,5},
         };
         
-        BasicTask * task5 = positionTaskBuilder.CreateTasksFromPoints(points5, 6); 
+        BasicTask * task9 = positionTaskBuilder.CreateTasksFromPoints(points5, 6); 
         taskControler.AddTask(task1);
-        //taskControler.AddTask(task2);
-        //taskControler.AddTask(task3);
+        taskControler.AddTask(task2);
+        taskControler.AddTask(task3);
         taskControler.AddTask(task4);
         taskControler.AddTask(task5);
+        taskControler.AddTask(task6);
+        taskControler.AddTask(task7);
+        taskControler.AddTask(task8);
+        taskControler.AddTask(task9);
         taskControler.SetAutoMode(true);
         taskControler.Start();
         ok = 0;
@@ -310,15 +320,10 @@ void loop()
     }
     
     lcd.setCursor(0, 0);
-    lcd.print("x:");
-    lcd.print(positionControler.GetCurrentPoint().x);
+    lcd.print("Nombre de points:");
     lcd.setCursor(0, 1);
-    lcd.print("y:");
-    lcd.print(positionControler.GetCurrentPoint().y);
-    lcd.setCursor(0, 2);
-    lcd.print("current angle:");
-    lcd.print(positionControler.GetCurrentAngle());
-    
+    lcd.print("37");
+
     
     espNowMaster.Update();
     

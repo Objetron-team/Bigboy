@@ -10,13 +10,13 @@ class BasicTask
 private:
     BasicTask *next_task = nullptr;
 
-    virtual bool _IsDone();
+    virtual bool _IsDone()= 0;
 
-    virtual void _Update();
+    virtual void _Update() = 0;
 
-    virtual void _Compute();
+    virtual void _Compute() = 0;
 
-    virtual void _Debug();
+    virtual void _Debug()= 0;
 
 public:
     int id = 0;

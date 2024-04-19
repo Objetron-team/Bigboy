@@ -10,6 +10,7 @@
 #include "Tasks/RotateTask.hpp"
 #include "Tasks/WaitTask.hpp"
 #include "Tasks/ReverseTask.hpp"
+#include "Tasks/ClawTask.hpp"
 
 
 class TaskControler
