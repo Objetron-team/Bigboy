@@ -56,6 +56,7 @@ public:
         }
         else if (auto_mode && current_task->IsDone() && !current_task->HasNextTask())
         {
+            positionControler->SoftReset();
             Stop();
         }
 
