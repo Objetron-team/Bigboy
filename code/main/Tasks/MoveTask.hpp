@@ -2,7 +2,7 @@
 
 #include "BasicTask.hpp"
 
-#define DISTANCE_THRESHOLD 5 // cm
+#define DISTANCE_THRESHOLD 2 // cm
 #define TTL_FACTOR 5000
 
 class MoveTask : public BasicTask
@@ -27,11 +27,12 @@ private:
     bool _IsDone() override
     {
         // check if the current position is close enough to the target position
-        Point current_position = positionControler->GetCurrentPoint();
+        double current_distance_pulse = driveControler->GetDistance();
+        double distance_error_pulse = distance_to_target_pulse - current_distance_pulse;
 
-        double distance_to_target = sqrt(pow(target_position.x - current_position.x, 2) + pow(target_position.y - current_position.y, 2));
+        double distance_error_cm = valueConverter->PulseToDistanceCM(distance_error_pulse);
 
-        return distance_to_target < DISTANCE_THRESHOLD;
+        return (distance_error_cm < DISTANCE_THRESHOLD);
     }
 
     void _Debug() override
