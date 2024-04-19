@@ -4,7 +4,7 @@
 #define DISTANCE_KI 0.0
 #define DISTANCE_KD 0.0
 
-#define ANGLE_KP 0.5
+#define ANGLE_KP 0.8
 #define ANGLE_KI 0.0
 #define ANGLE_KD 0.0
 
