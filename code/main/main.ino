@@ -17,11 +17,6 @@
 #include "settings/pami/radar.h";
 #endif
 
-struct Command
-{
-    int value; // Replace with your command data type and structure
-};
-
 #include "PIDMotor.hpp"
 #include "DriveControler.hpp"
 #include "PositionControler.hpp"
@@ -31,20 +26,24 @@ struct Command
 #include "Claw.hpp"
 #include "Radar.hpp"
 #include "PositionTaskBuilder.hpp"
-#include "CommandServer.hpp"
-//#include "CommandClient.hpp"
+
+#include "ESPNowStruct.hpp"
+#include "ESPNowMaster.hpp"
+#include "ESPNowSlave.hpp"
 
 
 #if IS_MAIN
     Arm myArm(PIN_ARM, ARM_TIME);
 Claw myClaw(PIN_CLAW_1, PIN_CLAW_2, CLAW_TIME);
 
-CommandeServer commandeServer(DEVICE_NAME);
+ESPNowMaster espNowMaster;
+
 
 #else
     Radar radar(TRIGGER_PIN, ECHO_PIN);
 
-//CommandClient commandClient(DEVICE_NAME);
+ESPNowSlave espNowSlave;
+
 #endif
 
 #define RXp2 16
@@ -77,13 +76,15 @@ void setup()
     myArm.Init();
     // Radar setup
     Serial2.begin(9600, SERIAL_8N1, RXp2, TXp2);
-    commandeServer.Init();
-    commandeServer.Start();
+    
+    
+    
     #else
         radar.Init();
-    driveControler.AddRadar(& radar, FRONT);
-    //commandClient.Init();
     
+    espNowSlave.Init();
+    
+    driveControler.AddRadar(& radar, FRONT);
     #endif
     
     // Motor setup
@@ -170,16 +171,12 @@ void loop()
         processBuffer();
     }
     
-    commandeServer.Update();
+    espNowMaster.Update();
     
     #endif
     
     taskControler.Update();
-    // taskControler.Debug();
     
-    // Serial.println(MAX_SPEED_PULSE);
-    
-    //driveControler.Debug();
     
     delay(5);
 }
