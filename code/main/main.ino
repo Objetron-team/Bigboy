@@ -14,7 +14,7 @@ void setup() {
     
     
     command_data pami_gris_cmd;
-    pami_gris_cmd.cmd_1 = YELLOW_ONE;
+    pami_gris_cmd.cmd_1 = BLUE_ONE;
     pami_gris_cmd.cmd_2 = AUTO_ON;
     pami_gris_cmd.cmd_3 = START;
     
@@ -25,7 +25,7 @@ void setup() {
     pami_gris.cmd_data = pami_gris_cmd;
     
     command_data pami_noir_cmd;
-    pami_noir_cmd.cmd_1 = YELLOW_TWO;
+    pami_noir_cmd.cmd_1 = BLUE_TWO;
     pami_noir_cmd.cmd_2 = AUTO_ON;
     pami_noir_cmd.cmd_3 = START;
     
