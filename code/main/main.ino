@@ -28,11 +28,11 @@
 #include "Radar.hpp"
 #include "PositionTaskBuilder.hpp"
 
-#include <LCD-I2C.h>
-#include <Wire.h>
+#include < LCD - I2C.h>
+#include < Wire.h>
 
 LCD_I2C lcd(0x27, 16, 2);
-int points=0;
+int points = 0;
 
 
 #if IS_MAIN
@@ -71,17 +71,17 @@ void setup()
     
     #if IS_MAIN
         myClaw.Init();
-        pinMode(35, INPUT);
-        lcd.begin();
-        lcd.display();
-        lcd.backlight();
-        //lcd.setCursor(0, 0);
-        //lcd.print("nombre de points:");
-        //lcd.setCursor(0, 1);
-        //lcd.print(points);
-        myArm.Init();
-        // Radar setup
-        Serial2.begin(9600, SERIAL_8N1, RXp2, TXp2);
+    pinMode(35, INPUT);
+    lcd.begin();
+    lcd.display();
+    lcd.backlight();
+    //lcd.setCursor(0, 0);
+    //lcd.print("nombre de points:");
+    //lcd.setCursor(0, 1);
+    //lcd.print(points);
+    myArm.Init();
+    // Radar setup
+    Serial2.begin(9600, SERIAL_8N1, RXp2, TXp2);
     #else
         radar.Init();
     driveControler.AddRadar( & radar, FRONT);
@@ -106,147 +106,64 @@ void setup()
 double global_target = 0;
 double global_target_2 = 0;
 
-void SerialCommande()
-{
-   
-         if(Serial.available() > 0) {
+void SerialCommande() {
+    
+    if (Serial.available() > 0) {
         
-         String commande = Serial.readStringUntil('\n');
-        char commande_type = commande.charAt(0);
+        String commande = Serial.readStringUntil('\n');
         
-        switch(commande_type) {
-            case 'z':
-                {
-                    // create Points array  blue 1
-                    Point points[2] = {
-                        {0,0} ,
-                        {10, -100} ,
-                    };
-                    
-                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,2);
-                    
-                    taskControler.AddTask(task);
-                    break;
-                }
-                case's':
-                {
-                    // create Points array bleu 2
-                    Point points[3] = {
-                        {0,0} ,
-                        {10,0} ,
-                        {100, 160} ,
-                    };
-                    
-                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,3);
-                    
-                    taskControler.AddTask(task);
-                    break;
-                }
-                case'q':
-                {
-                    // create Points array yellow 1
-                    Point points[2] = {
-                        {0,0} ,
-                        {20, 100} ,
-                    };
-                    
-                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,2);
-                    
-                    taskControler.AddTask(task);
-                    break;
-                }
-                case'd':
-                {
-                    // create Points array yellow 2
-                    Point points[4] = {
-                        {0, 0},
-                        {80, 0},
-                        {80, -130},
-                        {45 , -130},
-                    };
-                    
-                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,4);
-                    
-                    taskControler.AddTask(task);
-                    break;
-                }
-                case'e':
-                #if IS_MAIN
-                    myClaw.Open();
-                #endif
-                break;
-            case 'a':
-                #if IS_MAIN
-                    myClaw.Close();
-                #endif
-                break;
-            
-            case 'b':
-                {
-                    // create Points array
-                    Point points[6] = {
-                        {0,0} ,
-                        {80,0} ,
-                        {80,40} ,
-                        {40,40} ,
-                        {40,0} ,
-                        {0,0}
-                    };
-                    
-                    BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,6);
-                    taskControler.AddTask(task);
-                    break;
-                }
-                case 'y':
-                taskControler.SetAutoMode(true);
-                break;
-            case 'h':
-                taskControler.SetAutoMode(false);
-                break;
-            case 'o':
-                taskControler.Start();
-                break;
-            case 'p':
-                taskControler.Stop();
-                break;
-            case 'n':
-                taskControler.NextTask();
-                break;
-            case 'r':
-                taskControler.Reset();
-                break;
-            
-            default:
-            
+        //commande fomart  -> {letter}{number}
+        // ex: z50 -> avancer de 50 cm
+        
+        char letter = commande.charAt(0);
+        double number = commande.substring(1).toDouble();
+        
+        switch(letter)
+        {
+            case'z':
+            global_target = number;
+            break;
+            case's':
+            global_target = -number;
+            break;
+            case'a':
+            global_target_2 = number;
+            break;
+            case'd':
+            global_target_2 = -number;
             break;
         }
+        
+        driveControler.Reset();
+        driveControler.SetDistance(global_target);
+        driveControler.SetAngle(global_target_2);
     }
 }
 
 int processBuffer()
-{
+    {
     int parsed_number = 0;
     // Process the data stored in the buffer
     // For example, you can print it or perform any other desired operation
     for (int i = 0; i < bufferIndex; i++)
-    {
-        if (buffer[i] == '\n')
         {
+        if (buffer[i] == '\n')
+            {
             // If newline character is encountered, print the message and reset buffer
             
             parsed_number = atoi(buffer); // Convert the buffer content to an integer
             if (parsed_number != 0)
-            {
+                {
                 number = parsed_number; // Update the global variable only if a valid number is parsed
             }
             
             if (number < 15)
-            {
+                {
                 driveControler.UrgentStop();
                 taskControler.Stop();
             }
             else
-            {
+                {
                 taskControler.Start();
             }
             Serial.println();
@@ -261,84 +178,11 @@ int processBuffer()
     }
     return parsed_number;
 }
-unsigned long startTime = 0;
+unsignedlong startTime = 0;
 void loop()
-{
-    if(ok == 1){
-      unsigned long startTime = millis();
-    myArm.Open();
-    }
-
-    while (digitalRead(35) != LOW) {
-        Serial.println("attente");
-    }
-
-    unsigned long currentTime = millis();
-    long TimeUntilStop = currentTime - startTime;
-    if (TimeUntilStop < 90000) {
-    } else {
-        Serial.print("stop");
-        driveControler.UrgentStop();
-        taskControler.Stop();
-    }
-
-    //SerialCommande();
-    if (competition == true && ok==1){
-        Point points1[4] = { 
-            {0, 0},
-            {85, 0},
-            {87 , -125},
-            {33 , -140},
-        };
-        BasicTask *task1 = positionTaskBuilder.CreateTasksFromPoints(points1, 4); 
-        //ClawTask *task2 = new ClawTask(&myClaw);
-
-
-        //BasicTask *task3 = positionTaskBuilder.CreateTasksFromPoints(points3, 2); 
-        ReverseTask *task4 = new ReverseTask(&driveControler, &valueConverter);
-        
-        Point points5[7] = { 
-            {60,-42},
-            {100,-42},
-            {120,-42},
-            {150,0},
-            {180,0},
-            {200,10},
-            {240,10},
-        };
-
-        BasicTask *task5 = positionTaskBuilder.CreateTasksFromPoints(points5, 7 ); 
-        taskControler.AddTask(task1);
-        //taskControler.AddTask(task2);
-        //taskControler.AddTask(task3);
-        taskControler.AddTask(task4);
-        taskControler.AddTask(task5);
-        taskControler.SetAutoMode(true);
-        taskControler.Start();
-        ok = 0;
-    }
-
-    while (Serial2.available() > 0)
     {
-        char incomingByte = Serial2.read();
-
-        // Store incoming byte in the buffer
-        buffer[bufferIndex++] = incomingByte;
-
-        // Check if the buffer is full
-        if (bufferIndex >= BUFFER_SIZE)
-        {
-            processBuffer(); // Process the buffer when it's full
-        }
-    }
-
-    // Process remaining data in the buffer
-    if (bufferIndex > 0)
-    {
-        processBuffer();
-    }
-    taskControler.Update();
-    // taskControler.Debug();
+    positionControler.Update();
+    
     lcd.setCursor(0, 0);
     lcd.print("x:");
     lcd.print(positionControler.GetCurrentPoint().x);
