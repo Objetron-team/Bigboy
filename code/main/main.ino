@@ -1,6 +1,6 @@
 #define SAMPLE_TIME 15
 
-#define IS_MAIN true
+#define IS_MAIN false
 #define PAMI_TYPE 0 // 0 -> noir 1 -> gris
 
 
@@ -39,12 +39,6 @@
 #include "ESPNowMaster.hpp"
 #include "ESPNowSlave.hpp"
 
-#include <LCD-I2C.h>
-#include <Wire.h>
-
-LCD_I2C lcd(0x27, 16, 2);
-int points=0;
-
 
 
 #define RXp2 16
@@ -62,12 +56,12 @@ PIDMotor motorR(MOTOR_R_PIN_1, MOTOR_R_PIN_2, MOTOR_ACCELERATION, MOTOR_MAX_SPEE
 
 ValueConverter valueConverter(ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
 
-DriveControler driveControler( & motorL, & motorR);
-PositionControler positionControler( & driveControler, ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
+DriveControler driveControler(& motorL, & motorR);
+PositionControler positionControler(& driveControler, ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
 
-TaskControler taskControler( & positionControler, & driveControler, & valueConverter);
+TaskControler taskControler(& positionControler, & driveControler, & valueConverter);
 
-PositionTaskBuilder positionTaskBuilder( & positionControler, & driveControler, & valueConverter);
+PositionTaskBuilder positionTaskBuilder(& positionControler, & driveControler, & valueConverter);
 
 #if IS_MAIN
     Arm myArm(PIN_ARM, ARM_TIME);
@@ -76,7 +70,7 @@ ESPNowMaster espNowMaster;
 
 #else
     Radar radar(TRIGGER_PIN, ECHO_PIN);
-ESPNowSlave espNowSlave( & taskControler, & positionTaskBuilder);
+ESPNowSlave espNowSlave(& taskControler, & positionTaskBuilder);
 
 #endif
 
@@ -87,24 +81,17 @@ void setup()
     
     #if IS_MAIN
         myClaw.Init();
-        pinMode(35, INPUT);
-        lcd.begin();
-        lcd.display();
-        lcd.backlight();
-        //lcd.setCursor(0, 0);
-        //lcd.print("nombre de points:");
-        //lcd.setCursor(0, 1);
-        //lcd.print(points);
-        myArm.Init();
-        // Radar setup
-        Serial2.begin(9600, SERIAL_8N1, RXp2, TXp2);
-
+    pinMode(35, INPUT);
+    myArm.Init();
+    // Radar setup
+    Serial2.begin(9600, SERIAL_8N1, RXp2, TXp2);
+    
     #else
         radar.Init();
     
     espNowSlave.Init();
     
-    driveControler.AddRadar(& radar, FRONT);
+    driveControler.AddRadar( & radar, FRONT);
     #endif
     
     // Motor setup
@@ -119,7 +106,7 @@ void setup()
     driveControler.InitPid(DISTANCE_KP, DISTANCE_KI, DISTANCE_KD, ANGLE_KP, ANGLE_KI, ANGLE_KD, SAMPLE_TIME);
     
     taskControler.SetAutoMode(false);
-        
+    
 }
 
 double global_target = 0;
@@ -167,19 +154,19 @@ int processBuffer()
 unsigned long startTime = 0;
 void loop()
 {
-
+    
     
     #if IS_MAIN
-
-    if(ok == 1){
-      unsigned long startTime = millis();
-    myArm.Open();
+        
+        if (ok == 1) {
+            unsigned long startTime = millis();
+            myArm.Open();
     }
-
-    while (digitalRead(35) != LOW) {
+    
+    while(digitalRead(35) != LOW) {
         Serial.println("attente");
     }
-
+    
     unsigned long currentTime = millis();
     long TimeUntilStop = currentTime - startTime;
     if (TimeUntilStop < 90000) {
@@ -188,34 +175,34 @@ void loop()
         driveControler.UrgentStop();
         taskControler.Stop();
     }
-
+    
     //SerialCommande();
-    if (competition == true && ok==1){
+    if (competition == true && ok ==  1) {
         Point points1[4] = { 
-            {0, 0},
-            {85, 0},
-            {87 , -125},
-            {33 , -140},
+            {0, 0} ,
+            {85, 0} ,
+            {87 , -125} ,
+            {33 , -140} ,
         };
-        BasicTask *task1 = positionTaskBuilder.CreateTasksFromPoints(points1, 4); 
+        BasicTask * task1 = positionTaskBuilder.CreateTasksFromPoints(points1, 4); 
         //ClawTask *task2 = new ClawTask(&myClaw);
-
-
+        
+        
         //BasicTask *task3 = positionTaskBuilder.CreateTasksFromPoints(points3, 2); 
-        ReverseTask *task4 = new ReverseTask(&driveControler, &valueConverter,30);
-
+        ReverseTask * task4 = new ReverseTask( & driveControler, & valueConverter,30);
+        
         
         Point points5[7] = { 
-            {60,-42},
-            {100,-42},
-            {120,-42},
-            {150,0},
-            {180,0},
-            {200,10},
-            {240,10},
+            {60, -42} ,
+            {100, -42} ,
+            {120, -42} ,
+            {150,0} ,
+            {180,0} ,
+            {200,10} ,
+            {240,10} ,
         };
-
-        BasicTask *task5 = positionTaskBuilder.CreateTasksFromPoints(points5, 7 ); 
+        
+        BasicTask * task5 = positionTaskBuilder.CreateTasksFromPoints(points5, 7); 
         taskControler.AddTask(task1);
         //taskControler.AddTask(task2);
         //taskControler.AddTask(task3);
@@ -225,37 +212,27 @@ void loop()
         taskControler.Start();
         ok = 0;
     }
-
-    while (Serial2.available() > 0)
+    
+    while(Serial2.available() > 0)
     {
         char incomingByte = Serial2.read();
-
+        
         // Store incoming byte in the buffer
         buffer[bufferIndex++] = incomingByte;
-
+        
         // Check if the buffer is full
         if (bufferIndex >= BUFFER_SIZE)
         {
             processBuffer(); // Process the buffer when it's full
         }
     }
-
+    
     // Process remaining data in the buffer
     if (bufferIndex > 0)
     {
         processBuffer();
     }
-  
-   lcd.setCursor(0, 0);
-    lcd.print("x:");
-    lcd.print(positionControler.GetCurrentPoint().x);
-    lcd.setCursor(0, 1);
-    lcd.print("y:");
-    lcd.print(positionControler.GetCurrentPoint().y);
-    lcd.setCursor(0, 2);
-    lcd.print("current angle:");
-    lcd.print(positionControler.GetCurrentAngle());
-
+    
     
     espNowMaster.Update();
     
