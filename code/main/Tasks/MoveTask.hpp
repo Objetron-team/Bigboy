@@ -27,15 +27,13 @@ private:
     bool _IsDone() override
     {
         // check if the current position is close enough to the target position
-        Point current_position = positionControler->GetCurrentPoint();
+        double current_distance_pulse = driveControler->GetDistance();
+        double distance_error_pulse = distance_to_target_pulse - current_distance_pulse;
 
-        double distance_to_target = sqrt(pow(target_position.x - current_position.x, 2) + pow(target_position.y - current_position.y, 2));
+        double distance_error_cm = valueConverter->PulseToDistanceCM(distance_error_pulse);
 
-        Serial.print("Distance_to_target:");
-        Serial.println(distance_to_target);
-        return distance_to_target < DISTANCE_THRESHOLD;
-    }
-    
+        return (distance_error_cm < DISTANCE_THRESHOLD);
+    }    
     void _Debug() override
     {
         Serial.print("Target_x:");

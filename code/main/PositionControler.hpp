@@ -42,6 +42,13 @@ class PositionControler{
 
             current_angle += d_angle;
 
+            // angle can't be bigger than 180 degree
+            if(current_angle > 180){
+                current_angle -= 360;
+            }else if(current_angle < -180){
+                current_angle += 360;
+            }
+ 
             // convert into cm
             current_point.x += d_distance * cos(current_angle * M_PI / 180);
             current_point.y += d_distance * sin(current_angle * M_PI / 180);

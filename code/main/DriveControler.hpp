@@ -314,17 +314,17 @@ public:
     void Debug()
     {
 
-        Serial.print("Movement:");
-        Serial.print(GetTypeOfMovement());
-        Serial.print(",");
-
-        Serial.print("Movement_request:");
-        Serial.print(RequestedMovement());
-        Serial.print(",");
-
-        Serial.print("UrgentStop:");
-        Serial.print(isUrgentStop);
-        Serial.print(",");
+        //Serial.print("Movement:");
+        //Serial.print(GetTypeOfMovement());
+        //Serial.print(",");
+//
+        //Serial.print("Movement_request:");
+        //Serial.print(RequestedMovement());
+        //Serial.print(",");
+//
+        //Serial.print("UrgentStop:");
+        //Serial.print(isUrgentStop);
+        //Serial.print(",");
 
         Serial.print("Distance_target:");
         Serial.print(setpoint_distance);
@@ -340,13 +340,13 @@ public:
 
         Serial.print("Angle:");
         Serial.print(input_angle);
-        Serial.print(",");
-
-        Serial.print("Distance_output:");
-        Serial.print(output_distance);
-        Serial.print(",");
-
-        Serial.print("Angle_output:");
-        Serial.println(output_angle);
+        Serial.println(",");
+//
+        //Serial.print("Distance_output:");
+        //Serial.print(output_distance);
+        //Serial.print(",");
+//
+        //Serial.print("Angle_output:");
+        //Serial.println(output_angle);
     }
 };

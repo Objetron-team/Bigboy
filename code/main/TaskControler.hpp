@@ -9,6 +9,8 @@
 #include "Tasks/MoveTask.hpp"
 #include "Tasks/RotateTask.hpp"
 #include "Tasks/WaitTask.hpp"
+#include "Tasks/ReverseTask.hpp"
+
 
 class TaskControler
 {
@@ -130,22 +132,22 @@ public:
 
     void Debug()
     {
-        Serial.print("Tasks:");
-        Serial.print(GetNumberOfTask());
-        Serial.print(",");
+        //Serial.print("Tasks:");
+        //Serial.print(GetNumberOfTask());
+        //Serial.print(",");
 
         Serial.print("X:");
         Serial.print(positionControler->GetCurrentPoint().x);
         Serial.print(",");
 
         Serial.print("Y:");
-        Serial.print(positionControler->GetCurrentPoint().y);
-        Serial.print(",");
-
-        Serial.print("cur_angle:");
-        Serial.print(positionControler->GetCurrentAngle());
-        Serial.print(",");
-
-        current_task->Debug();
+        Serial.println(positionControler->GetCurrentPoint().y);
+        //Serial.print(",")//;
+//
+        //Serial.print("cur_angle:");
+        //Serial.print(positionControler->GetCurrentAngle());
+        //Serial.print(",");
+//
+        //current_task->Debug();
     }
 };

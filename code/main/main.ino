@@ -3,25 +3,25 @@
 #define IS_MAIN true
 #define PAMI_TYPE 0 // 0 -> noir 1 -> gris
 
+
+
 #if IS_MAIN
     #include "settings/main/motor_def.h";
 #include "settings/main/drive_def.h";
-#include "settings/main/bluetooth_config.h";
 #include "settings/main/radar.h";
 #include "settings/main/claw.h";
 #include "settings/main/arm.h";
 #else
     #include "settings/pami/motor_def.h";
 #include "settings/pami/drive_def.h";
-#include "settings/pami/bluetooth_config.h";
 #include "settings/pami/radar.h";
 #endif
-#include "BluetoothSerial.h"
-BluetoothSerial SerialBT;
+
 #include "PIDMotor.hpp"
 #include "DriveControler.hpp"
 #include "PositionControler.hpp"
 #include "TaskControler.hpp"
+
 
 #include "Arm.hpp"
 #include "Claw.hpp"
@@ -75,10 +75,10 @@ void setup()
         lcd.begin();
         lcd.display();
         lcd.backlight();
-        lcd.setCursor(0, 0);
-        lcd.print("nombre de points:");
-        lcd.setCursor(0, 1);
-        lcd.print(points);
+        //lcd.setCursor(0, 0);
+        //lcd.print("nombre de points:");
+        //lcd.setCursor(0, 1);
+        //lcd.print(points);
         myArm.Init();
         // Radar setup
         Serial2.begin(9600, SERIAL_8N1, RXp2, TXp2);
@@ -98,10 +98,7 @@ void setup()
     // DriveControler setup
     driveControler.InitPid(DISTANCE_KP, DISTANCE_KI, DISTANCE_KD, ANGLE_KP, ANGLE_KI, ANGLE_KD, SAMPLE_TIME);
     
-    
-    
     Serial.begin(115200);
-    SerialBT.begin(device_name); // Bluetooth device name
     
     taskControler.SetAutoMode(false);
 }
@@ -111,11 +108,9 @@ double global_target_2 = 0;
 
 void SerialCommande()
 {
-    
-    //if (SerialBT.available() > 0){
+   
          if(Serial.available() > 0) {
         
-        //String commande = SerialBT.readStringUntil('\n');
          String commande = Serial.readStringUntil('\n');
         char commande_type = commande.charAt(0);
         
@@ -199,7 +194,6 @@ void SerialCommande()
                     };
                     
                     BasicTask * task = positionTaskBuilder.CreateTasksFromPoints(points,6);
-                    
                     taskControler.AddTask(task);
                     break;
                 }
@@ -272,7 +266,6 @@ void loop()
 {
     if(ok == 1){
       unsigned long startTime = millis();
-    myClaw.Open();
     myArm.Open();
     }
 
@@ -289,21 +282,37 @@ void loop()
         taskControler.Stop();
     }
 
-    SerialCommande();
+    //SerialCommande();
     if (competition == true && ok==1){
-        Point points1[7] = { // rename to points1
+        Point points1[4] = { 
             {0, 0},
-            {80, 0},
-            {80, -50},
-            {80 , -100},
-            {80 , -130},
-            {80 , -135},
-            {43 , -135},
+            {85, 0},
+            {87 , -125},
+            {33 , -140},
+        };
+        BasicTask *task1 = positionTaskBuilder.CreateTasksFromPoints(points1, 4); 
+        //ClawTask *task2 = new ClawTask(&myClaw);
+
+
+        //BasicTask *task3 = positionTaskBuilder.CreateTasksFromPoints(points3, 2); 
+        ReverseTask *task4 = new ReverseTask(&driveControler, &valueConverter);
+        
+        Point points5[7] = { 
+            {60,-42},
+            {100,-42},
+            {120,-42},
+            {150,0},
+            {180,0},
+            {200,10},
+            {240,10},
         };
 
-        BasicTask *task1 = positionTaskBuilder.CreateTasksFromPoints(points1, 7); // rename to task1
-
+        BasicTask *task5 = positionTaskBuilder.CreateTasksFromPoints(points5, 7 ); 
         taskControler.AddTask(task1);
+        //taskControler.AddTask(task2);
+        //taskControler.AddTask(task3);
+        taskControler.AddTask(task4);
+        taskControler.AddTask(task5);
         taskControler.SetAutoMode(true);
         taskControler.Start();
         ok = 0;
@@ -329,9 +338,17 @@ void loop()
         processBuffer();
     }
     taskControler.Update();
-    //taskControler.Debug();
-
-    //driveControler.Debug();
+    // taskControler.Debug();
+    lcd.setCursor(0, 0);
+    lcd.print("x:");
+    lcd.print(positionControler.GetCurrentPoint().x);
+    lcd.setCursor(0, 1);
+    lcd.print("y:");
+    lcd.print(positionControler.GetCurrentPoint().y);
+    lcd.setCursor(0, 2);
+    lcd.print("current angle:");
+    lcd.print(positionControler.GetCurrentAngle());
+    // driveControler.Debug();
     
     delay(5);
 }

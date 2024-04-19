@@ -2,7 +2,7 @@
 
 #include "BasicTask.hpp"
 
-#define WAIT_TIME_MS 500
+#define WAIT_TIME_MS 0
 #define DO_STOP_ROBOT false
 
 class WaitTask : public BasicTask
