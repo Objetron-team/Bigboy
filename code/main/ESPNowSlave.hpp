@@ -52,13 +52,12 @@ public:
         }
         case YELLOW_TWO:
         {
-            Point points[3] = {
+            Point points[2] = {
                 {0, 0},
-                {10, 0},
-                {95, -160},
+                {160, 100},
             };
 
-            BasicTask *task = positionTaskBuilder_esp->CreateTasksFromPoints(points, 3);
+            BasicTask *task = positionTaskBuilder_esp->CreateTasksFromPoints(points, 2);
 
             taskControler_esp->AddTask(task);
             break;
@@ -77,13 +76,12 @@ public:
         }
         case BLUE_TWO:
         {
-            Point points[3] = {
+            Point points[2] = {
                 {0, 0},
-                {10, 0},
-                {95, 160},
+                {160, -100},
             };
 
-            BasicTask *task = positionTaskBuilder_esp->CreateTasksFromPoints(points, 3);
+            BasicTask *task = positionTaskBuilder_esp->CreateTasksFromPoints(points, 2);
 
             taskControler_esp->AddTask(task);
             break;
