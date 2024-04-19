@@ -9,6 +9,7 @@
 #include "Tasks/MoveTask.hpp"
 #include "Tasks/RotateTask.hpp"
 #include "Tasks/WaitTask.hpp"
+#include "Tasks/ReverseTask.hpp"
 
 class TaskControler
 {

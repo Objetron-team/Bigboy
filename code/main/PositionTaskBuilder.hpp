@@ -9,6 +9,7 @@
 #include "Tasks/MoveTask.hpp"
 #include "Tasks/RotateTask.hpp"
 #include "Tasks/WaitTask.hpp"
+#include "Tasks/ReverseTask.hpp"
 
 class PositionTaskBuilder
 {
@@ -36,9 +37,24 @@ public:
         return new RotateTask(positionControler, driveControler, valueConverter, target);
     }
 
+    ReverseTask *CreateReverseTask(double distance_cm)
+    {
+        return new ReverseTask(driveControler, valueConverter, distance_cm);
+    }
+
+    BasicTask *MoveToPointTask(Point target)
+    {
+        BasicTask *first_task = CreateRotateTask(target);
+        MoveTask *move_task = CreateMoveTask(target);
+
+        first_task->AddTask(move_task);
+
+        return first_task;
+    }
+
     BasicTask *CreateTasksFromPoints(Point *points, int size)
     {
-        BasicTask *first_task = CreateMoveTask(points[0]);
+        WaitTask *first_task = new WaitTask(driveControler);
 
         for (int i = 1; i < size; i++)
         {
