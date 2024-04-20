@@ -6,13 +6,19 @@
 #define DISTANCE_THRESHOLD 5 // cm
 #define TTL_FACTOR 300
 
+enum ClawState
+{
+    OPEN,
+    CLOSE
+};
+
 class ClawTask : public BasicTask
 {
 
 private:
-    
     Claw *myClaw;
-int idd;
+    ClawState request_state;
+
     void _Update() override
     {
         Serial.print("");
@@ -20,32 +26,31 @@ int idd;
 
     bool _IsDone() override
     {
-        
+
         return true;
     }
-    
+
     void _Debug() override
     {
-      Serial.print("");
+        Serial.print("");
     }
 
     void _Compute() override
     {
-        if (idd == 0){
+        if (request_state == OPEN)
+        {
             myClaw->Open();
         }
-        else{
+        else
+        {
             myClaw->Close();
         }
     }
 
 public:
-    ClawTask( Claw *claw, int id)
+    ClawTask(Claw *claw, ClawState state)
     {
         myClaw = claw;
-        this->idd = id;
+        request_state = state;
     }
-    
-        
-    
 };
