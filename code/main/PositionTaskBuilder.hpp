@@ -68,9 +68,9 @@ public:
             MoveTask *move_task = CreateMoveTask(target);
 
             first_task->AddTask(rotate_task);
-            first_task->AddTask(wait_task_1);
+            // first_task->AddTask(wait_task_1);
             first_task->AddTask(move_task);
-            first_task->AddTask(wait_task_2);
+            // first_task->AddTask(wait_task_2);
         }
 
         return first_task;

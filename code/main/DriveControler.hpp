@@ -49,6 +49,8 @@ private:
     double setpoint_distance, input_distance, output_distance;
     double setpoint_angle, input_angle, output_angle;
 
+    bool radar_enable = true;
+
     void CheckRadar(RadarPosition position)
     {
         for (Radar *radar : radars[position])
@@ -72,6 +74,11 @@ private:
 
     void CheckRadars()
     {
+        if (!radar_enable)
+        {
+            return;
+        }
+
         this->isUrgentStop = false;
         MovementType movement = RequestedMovement();
 
@@ -311,20 +318,25 @@ public:
         isUrgentStop = true;
     }
 
+    void DisableRadar()
+    {
+        radar_enable = false;
+    }
+
     void Debug()
     {
 
-        //Serial.print("Movement:");
-        //Serial.print(GetTypeOfMovement());
-        //Serial.print(",");
-//
-        //Serial.print("Movement_request:");
-        //Serial.print(RequestedMovement());
-        //Serial.print(",");
-//
-        //Serial.print("UrgentStop:");
-        //Serial.print(isUrgentStop);
-        //Serial.print(",");
+        // Serial.print("Movement:");
+        // Serial.print(GetTypeOfMovement());
+        // Serial.print(",");
+        //
+        // Serial.print("Movement_request:");
+        // Serial.print(RequestedMovement());
+        // Serial.print(",");
+        //
+        // Serial.print("UrgentStop:");
+        // Serial.print(isUrgentStop);
+        // Serial.print(",");
 
         Serial.print("Distance_target:");
         Serial.print(setpoint_distance);
@@ -341,12 +353,12 @@ public:
         Serial.print("Angle:");
         Serial.print(input_angle);
         Serial.println(",");
-//
-        //Serial.print("Distance_output:");
-        //Serial.print(output_distance);
-        //Serial.print(",");
-//
-        //Serial.print("Angle_output:");
-        //Serial.println(output_angle);
+        //
+        // Serial.print("Distance_output:");
+        // Serial.print(output_distance);
+        // Serial.print(",");
+        //
+        // Serial.print("Angle_output:");
+        // Serial.println(output_angle);
     }
 };

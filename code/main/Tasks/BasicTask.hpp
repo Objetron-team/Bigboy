@@ -8,8 +8,6 @@
 class BasicTask
 {
 private:
-    BasicTask *next_task = nullptr;
-
     virtual bool _IsDone();
 
     virtual void _Update();
@@ -20,6 +18,8 @@ private:
 
 public:
     int id = 0;
+
+    BasicTask *next_task = nullptr;
 
     long start_time = 0;
     long time_to_live = 10000; // seconds

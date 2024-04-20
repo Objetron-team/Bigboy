@@ -22,6 +22,16 @@ private:
     {
         driveControler->SetDistance(distance_to_target_pulse);
         driveControler->SetAngle(0);
+
+        double current_distance_pulse = driveControler->GetDistance();
+        double distance_error_pulse = distance_to_target_pulse - current_distance_pulse;
+
+        double relative_error = distance_error_pulse / distance_to_target_pulse;
+
+        if (relative_error < 0.35 && next_task == nullptr)
+        {
+            driveControler->DisableRadar();
+        }
     }
 
     bool _IsDone() override
@@ -34,7 +44,7 @@ private:
 
         return (abs(distance_error_cm) < DISTANCE_THRESHOLD);
     }
-  
+
     void _Debug() override
     {
         Serial.print("Target_x:");
