@@ -11,7 +11,7 @@ class ESPNowMaster
 {
 private:
     const int SEND_INTERVAL = 2000;
-    const int WAIT_TIME = 5000;
+    const int WAIT_TIME = 90000;
 
     long start_time = 0;
     long last_send_time = 0;

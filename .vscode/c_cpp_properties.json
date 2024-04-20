@@ -220,6 +220,7 @@
                 "C:\\Users\\rmezg\\Documents\\Arduino\\libraries\\ESP32Encoder\\src",
                 "C:\\Users\\rmezg\\Documents\\Arduino\\libraries\\PID",
                 "C:\\Users\\rmezg\\Documents\\Arduino\\libraries\\ESP32Servo\\src",
+                "C:\\Users\\rmezg\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\2.0.11\\libraries\\WiFi\\src",
                 "C:\\Users\\rmezg\\Documents\\Arduino\\libraries\\LCD-I2C\\src",
                 "C:\\Users\\rmezg\\AppData\\Local\\Arduino15\\packages\\esp32\\hardware\\esp32\\2.0.11\\libraries\\Wire\\src",
                 "c:\\users\\rmezg\\appdata\\local\\arduino15\\packages\\esp32\\tools\\xtensa-esp32-elf-gcc\\esp-2021r2-patch5-8.4.0\\xtensa-esp32-elf\\include\\c++\\8.4.0",

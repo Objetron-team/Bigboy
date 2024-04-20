@@ -7,7 +7,7 @@
 
 #if IS_MAIN
     
-    #define DEATH_TIME 100 // in s
+    #define DEATH_TIME 90 // in s
     #define LEVEL_PIN 23
     
     #include "settings/main/motor_def.h";
@@ -158,6 +158,10 @@ void setup()
     lcd.begin();
     lcd.display();
     lcd.backlight();
+    lcd.setCursor(0, 0);
+    lcd.print("Nombre de points:");
+    lcd.setCursor(0, 1);
+    lcd.print("32");
     
     myArm.Init();
     Serial2.begin(9600, SERIAL_8N1, RXp2, TXp2);
@@ -235,8 +239,7 @@ void loop()
     #if IS_MAIN
         
         if (ok == 1) {
-            unsigned long startTime = millis();
-            myArm.Open();
+            unsigned long startTime = millis();     
     }
     
     while(digitalRead(35) != LOW) {
@@ -245,7 +248,7 @@ void loop()
     
     unsigned long currentTime = millis();
     long TimeUntilStop = currentTime - startTime;
-    if (TimeUntilStop < 90000) {
+    if (TimeUntilStop < 900000000000) {
     } else {
         Serial.print("stop");
         driveControler.UrgentStop();
@@ -269,12 +272,14 @@ void loop()
         ClawTask *task4 = new ClawTask(&myClaw, 1); 
         Point points3[2] = {
             {87,  -140},
+            //{35 , -150},
             {35 , -150},
         };
         BasicTask *task5 = positionTaskBuilder.CreateTasksFromPoints(points3, 2);
         ClawTask *task6 = new ClawTask(&myClaw, 0);
         ReverseTask *task7 = new ReverseTask(&driveControler, &valueConverter,30);
-        ClawTask *task8 = new ClawTask(&myClaw, 1);
+
+        /*ClawTask *task8 = new ClawTask(&myClaw, 1);
         Point points5[6] = { 
             {60,-42},
             {100,-22},
@@ -284,7 +289,17 @@ void loop()
             {230,5},
         };
         
-        BasicTask * task9 = positionTaskBuilder.CreateTasksFromPoints(points5, 6); 
+        BasicTask * task9 = positionTaskBuilder.CreateTasksFromPoints(points5, 6); */
+
+        ClawTask *task8 = new ClawTask(&myClaw, 1);
+        Point points5[3] = { 
+            {100,-50},
+            {100, -50},
+            {200, 0},
+        };
+        
+        BasicTask * task9 = positionTaskBuilder.CreateTasksFromPoints(points5, 3);
+        
         taskControler.AddTask(task1);
         taskControler.AddTask(task2);
         taskControler.AddTask(task3);
@@ -319,13 +334,24 @@ void loop()
         processBuffer();
     }
     
-    lcd.setCursor(0, 0);
-    lcd.print("Nombre de points:");
-    lcd.setCursor(0, 1);
-    lcd.print("37");
+    
 
     
     espNowMaster.Update();
+
+    lcd.setCursor(0, 0);
+    lcd.print("Nombre de points: ");
+    lcd.print("32");
+    lcd.setCursor(0,1);
+    lcd.print("X:");
+    lcd.print(positionControler.GetCurrentPoint().x);
+    lcd.print(" Y:");
+    lcd.print(positionControler.GetCurrentPoint().y);
+    lcd.print(" A:");
+    lcd.print(positionControler.GetCurrentAngle());
+
+
+
     
     #endif
     
