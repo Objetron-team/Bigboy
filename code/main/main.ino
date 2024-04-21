@@ -1,7 +1,7 @@
 #define SAMPLE_TIME 15
 
 #define IS_MAIN false
-#define PAMI_TYPE 1 // 0 -> noir 1 -> gris
+#define PAMI_TYPE 0 // 0 -> noir 1 -> gris
 
 
 
@@ -56,12 +56,12 @@ PIDMotor motorR(MOTOR_R_PIN_1, MOTOR_R_PIN_2, MOTOR_ACCELERATION, MOTOR_MAX_SPEE
 
 ValueConverter valueConverter(ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
 
-DriveControler driveControler( & motorL, & motorR);
-PositionControler positionControler( & driveControler, ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
+DriveControler driveControler(& motorL, & motorR);
+PositionControler positionControler(& driveControler, ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
 
-TaskControler taskControler( & positionControler, & driveControler, & valueConverter);
+TaskControler taskControler(& positionControler, & driveControler, & valueConverter);
 
-PositionTaskBuilder positionTaskBuilder( & positionControler, & driveControler, & valueConverter);
+PositionTaskBuilder positionTaskBuilder(& positionControler, & driveControler, & valueConverter);
 
 #if IS_MAIN
     Arm myArm(PIN_ARM, ARM_TIME);
@@ -70,7 +70,7 @@ ESPNowMaster espNowMaster;
 
 #else
     Radar radar(TRIGGER_PIN, ECHO_PIN);
-ESPNowSlave espNowSlave( & taskControler, & positionTaskBuilder);
+ESPNowSlave espNowSlave(& taskControler, & positionTaskBuilder);
 
 #endif
 
@@ -91,7 +91,7 @@ void setup()
     
     espNowSlave.Init();
     
-    driveControler.AddRadar(& radar, FRONT);
+    driveControler.AddRadar( & radar, FRONT);
     #endif
     
     // Motor setup
@@ -189,7 +189,7 @@ void loop()
         
         
         //BasicTask *task3 = positionTaskBuilder.CreateTasksFromPoints(points3, 2); 
-        ReverseTask * task4 = new ReverseTask(& driveControler, & valueConverter,30);
+        ReverseTask * task4 = new ReverseTask( & driveControler, & valueConverter,30);
         
         
         Point points5[7] = { 
