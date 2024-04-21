@@ -42,7 +42,7 @@ public:
         {
             Point points[2] = {
                 {0, 0},
-                {10, 100},
+                {10, 105},
             };
 
             BasicTask *task = positionTaskBuilder_esp->CreateTasksFromPoints(points, 2);
@@ -54,7 +54,7 @@ public:
         {
             Point points[2] = {
                 {0, 0},
-                {165, 105},
+                {170, 113},
             };
 
             BasicTask *task = positionTaskBuilder_esp->CreateTasksFromPoints(points, 2);
@@ -66,7 +66,7 @@ public:
         {
             Point points[2] = {
                 {0, 0},
-                {10, -100},
+                {10, -105},
             };
 
             BasicTask *task = positionTaskBuilder_esp->CreateTasksFromPoints(points, 2);
@@ -78,7 +78,7 @@ public:
         {
             Point points[2] = {
                 {0, 0},
-                {165, -105},
+                {170, -113},
             };
 
             BasicTask *task = positionTaskBuilder_esp->CreateTasksFromPoints(points, 2);
