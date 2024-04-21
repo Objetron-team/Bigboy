@@ -2,7 +2,7 @@
 
 #include "BasicTask.hpp"
 
-#define ANGLE_THRESHOLD 2 // degree
+#define ANGLE_THRESHOLD 4 // degree
 #define TTL_FACTOR 300
 
 class RotationTask : public BasicTask
@@ -38,7 +38,7 @@ private:
 
     void _Compute() override
     {
-        time_to_live = (target_angle_pulse / (MAX_SPEED_PULSE)) * TTL_FACTOR;
+        time_to_live = 1000000000;
     }
 
 public:

@@ -45,8 +45,8 @@ public:
     }
 
     void Close(){
-        servo_2->write(103);
         servo_1->write(75);
+        servo_2->write(103);
         delay(1000);
         servo_2->write(90);
         servo_1->write(90);

@@ -40,8 +40,8 @@
 #include "ESPNowMaster.hpp"
 #include "ESPNowSlave.hpp"
 
-#include < LCD - I2C.h>
-#include < Wire.h>
+#include <LCD-I2C.h>
+#include <Wire.h>
 
 LCD_I2C lcd(0x27, 16, 2);
 int points = 0;
@@ -235,30 +235,44 @@ void loop()
         taskControler.AddTask(new ClawTask(& myClaw, OPEN));
         
         //part 2 -> Recolt the flowers
-        taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 94));
+        taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 95)); //94, 90
         taskControler.AddTask(new ClawTask(& myClaw, CLOSE));
-        taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 60));
+        taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, -50)); // AJOUT strat2
+        //taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 55));Strat1
+        taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 65 ));
         
+ 
         //part 3 -> Cash the flowers
-        taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, -90));
-        taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 64));
+        // taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, -90));Strat1
+        //taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 50));Strat1
         taskControler.AddTask(new ClawTask(& myClaw, OPEN));
-        taskControler.AddTask(new ReverseTask(& driveControler, & valueConverter, 64));
+        //taskControler.AddTask(new ReverseTask(& driveControler, & valueConverter, 50));Strat1
+        taskControler.AddTask(new ReverseTask(& driveControler, & valueConverter, 30)); //Ajout strat2
         
         //part 4 -> Go to next circle
-        taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, -152));
-        taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 76));
-        taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, -10));
-        taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 62));
+        //taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, -152)); Strat1
+        taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, 140)); // ajout strat 2
+        //taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 76)); //Strat1
+        taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 76)); // Ajout start 2
+        //taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, -10)); //Strat1
+        taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, 45));// Ajout start 2
+        //taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 62));// strat1
+        taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 53));// Ajout start 2
         taskControler.AddTask(new ClawTask(& myClaw, CLOSE));
         
+        
         //part 5 -> Align for cash in
-        taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, 72));
-        taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 22));
-        taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, -90));
-        taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 42));
+        //taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, 72));// Strat 1
+        taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, 60));// Ajout start 2
+        //taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 22));//Strat 1
+        taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 35));// Ajout start 2
+        //taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, -90)); //Strat1
+        taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, -90));// Ajout start 2
+        //taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 42)); // strat1
+        taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 75));// Ajout start 2
         taskControler.AddTask(new ClawTask(& myClaw, OPEN));
-        taskControler.AddTask(new ReverseTask(& driveControler, & valueConverter, 30));
+        //taskControler.AddTask(new ReverseTask(& driveControler, & valueConverter, 25));//Strat1
+        taskControler.AddTask(new ReverseTask(& driveControler, & valueConverter, 15));// Ajout start 2
         
         
         taskControler.SetAutoMode(true);
