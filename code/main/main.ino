@@ -40,8 +40,8 @@
 #include "ESPNowMaster.hpp"
 #include "ESPNowSlave.hpp"
 
-#include < LCD - I2C.h>
-#include < Wire.h>
+#include <LCD-I2C.h>
+#include <Wire.h>
 
 LCD_I2C lcd(0x27, 16, 2);
 int points = 0;
