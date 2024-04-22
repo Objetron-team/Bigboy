@@ -63,29 +63,26 @@ PIDMotor motorR(MOTOR_R_PIN_1, MOTOR_R_PIN_2, MOTOR_ACCELERATION, MOTOR_MAX_SPEE
 
 ValueConverter valueConverter(ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
 
-DriveControler driveControler( & motorL, & motorR);
-PositionControler positionControler( & driveControler, ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
+DriveControler driveControler(& motorL, & motorR);
+PositionControler positionControler(& driveControler, ENCODER_RESOLUTION, WHEEL_DIAMETER, WHEEL_DISTANCE);
 
-TaskControler taskControler( & positionControler, & driveControler, & valueConverter);
+TaskControler taskControler(& positionControler, & driveControler, & valueConverter);
 
-PositionTaskBuilder positionTaskBuilder( & positionControler, & driveControler, & valueConverter);
+PositionTaskBuilder positionTaskBuilder(& positionControler, & driveControler, & valueConverter);
 
 #if IS_MAIN
     Arm myArm(PIN_ARM, ARM_TIME);
-    Claw myClaw(PIN_CLAW_1, PIN_CLAW_2, CLAW_TIME);
+Claw myClaw(PIN_CLAW_1, PIN_CLAW_2, CLAW_TIME);
 ESPNowMaster espNowMaster;
 
 #else
     Radar radar(TRIGGER_PIN, ECHO_PIN);
-ESPNowSlave espNowSlave( & taskControler, & positionTaskBuilder);
+ESPNowSlave espNowSlave(& taskControler, & positionTaskBuilder);
 
 #endif
 
 void setup()
 {
-    
-    
-    
     Serial.begin(115200);
     
     #if IS_MAIN
@@ -171,7 +168,7 @@ void setup()
     
     espNowSlave.Init();
     
-    driveControler.AddRadar(& radar, FRONT);
+    driveControler.AddRadar( & radar, FRONT);
     #endif
     
     // Motor setup
@@ -188,10 +185,6 @@ void setup()
     taskControler.SetAutoMode(false);
     
 }
-
-double global_target = 0;
-double global_target_2 = 0;
-
 
 int processBuffer()
 {
@@ -210,18 +203,10 @@ int processBuffer()
                 number = parsed_number; // Update the global variable only if a valid number is parsed
             }
             
-            if (number < 15)
+            if (number < 20)
             {
                 driveControler.UrgentStop();
-                
             }
-            else
-            {
-                
-            }
-            //Serial.println();
-            //Serial.write(buffer, i + 1); // Print the message until the newline character
-            //Serial.println();
             
             // Move remaining data to the beginning of the buffer
             memmove(buffer, buffer + i + 1, bufferIndex - i - 1);
@@ -231,84 +216,65 @@ int processBuffer()
     }
     return parsed_number;
 }
-unsigned long startTime = 0;
 void loop()
 {
     
-    
     #if IS_MAIN
         
-        if (ok == 1) {
-            unsigned long startTime = millis();     
-    }
-    
-    while(digitalRead(35) != LOW) {
+        while(digitalRead(35) != LOW) {
         Serial.println("attente");
     }
     
-    unsigned long currentTime = millis();
-    long TimeUntilStop = currentTime - startTime;
-    if (TimeUntilStop < 900000000000) {
-    } else {
-        Serial.print("stop");
-        driveControler.UrgentStop();
-        taskControler.Stop();
-    }
     
     if (competition == true && ok ==  1) {
         
         espNowMaster.Start();
-        Point points1[2] = { 
-            {0, 0},
-            {87, 0},
-        };
-        BasicTask *task1 = positionTaskBuilder.CreateTasksFromPoints(points1, 2); 
-        ClawTask *task2 = new ClawTask(&myClaw, 0);
-        Point points2[2] = { 
-            {87, 50},
-            {87 , -130},
-        };   
-        BasicTask *task3 = positionTaskBuilder.CreateTasksFromPoints(points2, 2);
-        ClawTask *task4 = new ClawTask(&myClaw, 1); 
-        Point points3[2] = {
-            {87,  -140},
-            //{35 , -150},
-            {35 , -150},
-        };
-        BasicTask *task5 = positionTaskBuilder.CreateTasksFromPoints(points3, 2);
-        ClawTask *task6 = new ClawTask(&myClaw, 0);
-        ReverseTask *task7 = new ReverseTask(&driveControler, &valueConverter,30);
-
-        /*ClawTask *task8 = new ClawTask(&myClaw, 1);
-        Point points5[6] = { 
-            {60,-42},
-            {100,-22},
-            {120,0},
-            {180,0},
-            {190,0},
-            {230,5},
-        };
+        //part 1 -> go to the line and rotate -> open claw
+        taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 95));
+        taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, -90));
+        taskControler.AddTask(new ClawTask(& myClaw, OPEN));
         
-        BasicTask * task9 = positionTaskBuilder.CreateTasksFromPoints(points5, 6); */
-
-        ClawTask *task8 = new ClawTask(&myClaw, 1);
-        Point points5[3] = { 
-            {100,-50},
-            {100, -50},
-            {200, 0},
-        };
+        //part 2 -> Recolt the flowers
+        taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 95)); //94, 90
+        taskControler.AddTask(new ClawTask(& myClaw, CLOSE));
+        taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, -50)); // AJOUT strat2
+        //taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 55));Strat1
+        taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 65 ));
         
-        BasicTask * task9 = positionTaskBuilder.CreateTasksFromPoints(points5, 3);
+ 
+        //part 3 -> Cash the flowers
+        // taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, -90));Strat1
+        //taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 50));Strat1
+        taskControler.AddTask(new ClawTask(& myClaw, OPEN));
+        //taskControler.AddTask(new ReverseTask(& driveControler, & valueConverter, 50));Strat1
+        taskControler.AddTask(new ReverseTask(& driveControler, & valueConverter, 30)); //Ajout strat2
         
-        taskControler.AddTask(task1);
-        taskControler.AddTask(task2);
-        taskControler.AddTask(task3);
-        taskControler.AddTask(task4);
-        taskControler.AddTask(task5);
-        taskControler.AddTask(task6);
-        taskControler.AddTask(task7);
-        taskControler.AddTask(task8);
-        taskControler.AddTask(task9);
+        //part 4 -> Go to next circle
+        //taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, -152)); Strat1
+        taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, 140)); // ajout strat 2
+        //taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 76)); //Strat1
+        taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 76)); // Ajout start 2
+        //taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, -10)); //Strat1
+        taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, 45));// Ajout start 2
+        //taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 62));// strat1
+        taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 53));// Ajout start 2
+        taskControler.AddTask(new ClawTask(& myClaw, CLOSE));
+        
+        
+        //part 5 -> Align for cash in
+        //taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, 72));// Strat 1
+        taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, 60));// Ajout start 2
+        //taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 22));//Strat 1
+        taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 35));// Ajout start 2
+        //taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, -90)); //Strat1
+        taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, -90));// Ajout start 2
+        //taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 42)); // strat1
+        taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 75));// Ajout start 2
+        taskControler.AddTask(new ClawTask(& myClaw, OPEN));
+        //taskControler.AddTask(new ReverseTask(& driveControler, & valueConverter, 25));//Strat1
+        taskControler.AddTask(new ReverseTask(& driveControler, & valueConverter, 15));// Ajout start 2
+        
+        
         taskControler.SetAutoMode(true);
         taskControler.Start();
         ok = 0;
@@ -335,10 +301,10 @@ void loop()
     }
     
     
-
+    
     
     espNowMaster.Update();
-
+    
     lcd.setCursor(0, 0);
     lcd.print("Nombre de points: ");
     lcd.print("32");
@@ -349,15 +315,10 @@ void loop()
     lcd.print(positionControler.GetCurrentPoint().y);
     lcd.print(" A:");
     lcd.print(positionControler.GetCurrentAngle());
-
-
-
     
     #endif
     
     taskControler.Update();
-    //taskControler.Debug();
-    
     
     delay(5);
 }

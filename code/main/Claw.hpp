@@ -38,15 +38,15 @@ public:
 
     void Open(){
         servo_1->write(110);
-        servo_2->write(80);
+        servo_2->write(83);
         delay(1000);
         servo_1->write(90);
         servo_2->write(90);
     }
 
     void Close(){
-        servo_2->write(103);
         servo_1->write(75);
+        servo_2->write(103);
         delay(1000);
         servo_2->write(90);
         servo_1->write(90);

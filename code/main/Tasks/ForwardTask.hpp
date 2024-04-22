@@ -5,7 +5,7 @@
 #define DISTANCE_THRESHOLD 2 // cm
 #define TTL_FACTOR 300
 
-class ReverseTask : public BasicTask
+class ForwardTask : public BasicTask
 {
 
 private:
@@ -35,7 +35,7 @@ private:
     void _Debug() override
     {
         Serial.print("TASK:");
-        Serial.print("ReverseTask");
+        Serial.print("ForwardTask");
 
         double current_distance_pulse = driveControler->GetDistance();
         double distance_error_pulse = (distance_to_target_pulse)-current_distance_pulse;
@@ -60,13 +60,12 @@ private:
     }
 
 public:
-    ReverseTask(DriveControler *driveControler, ValueConverter *valueConverter, double distance_cm)
-
+    ForwardTask(DriveControler *driveControler, ValueConverter *valueConverter, double distance_cm)
     {
         this->driveControler = driveControler;
         this->valueConverter = valueConverter;
 
-        distance_to_target_cm = -distance_cm;
+        distance_to_target_cm = distance_cm;
         distance_to_target_pulse = valueConverter->DistanceCMToPulse(distance_to_target_cm);
     }
 };
