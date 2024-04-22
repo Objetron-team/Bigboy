@@ -38,7 +38,7 @@ public:
 
     void Open(){
         servo_1->write(110);
-        servo_2->write(80);
+        servo_2->write(83);
         delay(1000);
         servo_1->write(90);
         servo_2->write(90);

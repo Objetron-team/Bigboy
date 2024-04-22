@@ -203,7 +203,7 @@ int processBuffer()
                 number = parsed_number; // Update the global variable only if a valid number is parsed
             }
             
-            if (number < 15)
+            if (number < 20)
             {
                 driveControler.UrgentStop();
             }
