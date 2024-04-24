@@ -1,11 +1,11 @@
 #pragma once
 #include <ESP32Servo.h>
 
-class Claw{
+class Claw
+{
 private:
-
-    Servo* servo_1;
-    Servo* servo_2;
+    Servo *servo_1;
+    Servo *servo_2;
 
     int claw_time;
 
@@ -17,10 +17,9 @@ private:
     long open_time;
     long current_time;
 
-    
-
 public:
-    Claw(int pin_1, int pin_2, int time){
+    Claw(int pin_1, int pin_2, int time)
+    {
         servo_1 = new Servo();
         servo_2 = new Servo();
 
@@ -30,31 +29,32 @@ public:
         claw_time = time;
     }
 
-
-    void Init(){
-        servo_1->attach(pin_1);
-        servo_2->attach(pin_2);
+    void Init()
+    {
+        servo_1->attach(pin_1); // droite
+        servo_2->attach(pin_2); // gauche
     }
 
-    void Open(){
-        servo_1->write(110);
-        servo_2->write(83);
+    void Open()
+    {
+        servo_1->write(105);
+        servo_2->write(80);
         delay(1000);
         servo_1->write(90);
         servo_2->write(90);
     }
 
-    void Close(){
-        servo_1->write(75);
-        servo_2->write(103);
+    void Close()
+    {
+        servo_1->write(77);
+        servo_2->write(102);
         delay(1000);
-        servo_2->write(90);
         servo_1->write(90);
+        servo_2->write(90);
+    }
 
-    }   
-
-    void Update(){
+    void Update()
+    {
         current_time = millis();
     }
-
 };

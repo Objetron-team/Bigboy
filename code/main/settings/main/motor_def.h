@@ -29,8 +29,8 @@
 #define ENCODER_RESOLUTION 8400  // pulses per revolution
 #define ENCODER_MAX_FREQ_L 12200 // Hz
 #define ENCODER_MAX_FREQ_R 12200 // Hz
-#define WHEEL_DIAMETER 0.0805     // meters
-#define WHEEL_DISTANCE 0.227 / 2  // meters
+#define WHEEL_DIAMETER 0.0805    // meters
+#define WHEEL_DISTANCE 0.227 / 2 // meters
 
 #define MAX_SPEED_PULSE ((ENCODER_MAX_FREQ_L + ENCODER_MAX_FREQ_R) / 2) * (MOTOR_MAX_SPEED / 100)
 
