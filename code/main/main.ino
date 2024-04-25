@@ -257,11 +257,11 @@ void loop()
         taskControler.AddTask(new ReverseTask(& driveControler, & valueConverter, 30)); //Ajout strat2
         
         //part 4 -> Go to next circle
-        taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, 145)); // ajout strat 2
-        // taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, 48)); // ajout strat 2
-        // taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, 30)); // ajout strat 2
+        taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, 48)); // ajout strat 2
+        taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, 48)); // ajout strat 2
+        taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, 38)); // ajout strat 2
         taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 76)); // Ajout start 2
-        taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, 45));// Ajout start 2
+        taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, 38));// Ajout start 2
         taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 53));// Ajout start 2
         taskControler.AddTask(new ClawTask(& myClaw, CLOSE));
         
