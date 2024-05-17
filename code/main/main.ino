@@ -4,23 +4,22 @@
 #define PAMI_TYPE 0 // 0 -> noir 1 -> gris
 
 
-
 #if IS_MAIN
     
     #define DEATH_TIME 90 // in s
     #define LEVEL_PIN 23
     
-    #include "settings/main/motor_def.h";
-#include "settings/main/drive_def.h";
-#include "settings/main/radar.h";
-#include "settings/main/claw.h";
-#include "settings/main/arm.h";
+    #include "settings/main/motor_def.h"
+    #include "settings/main/drive_def.h"
+    #include "settings/main/radar.h"
+    #include "settings/main/claw.h"
+    #include "settings/main/arm.h"
 #else
     #define DEATH_TIME 10 // in s
-    
-    #include "settings/pami/motor_def.h";
-#include "settings/pami/drive_def.h";
-#include "settings/pami/radar.h";
+        
+    #include "settings/pami/motor_def.h"
+    #include "settings/pami/drive_def.h"
+    #include "settings/pami/radar.h"
 
 #endif
 
@@ -28,13 +27,10 @@
 #include "DriveControler.hpp"
 #include "PositionControler.hpp"
 #include "TaskControler.hpp"
-
-
 #include "Arm.hpp"
 #include "Claw.hpp"
 #include "Radar.hpp"
 #include "PositionTaskBuilder.hpp"
-
 
 #include "ESPNowStruct.hpp"
 #include "ESPNowMaster.hpp"
@@ -46,15 +42,15 @@
 LCD_I2C lcd(0x27, 16, 2);
 int points = 0;
 
-
-
 #define RXp2 16
 #define TXp2 17
 
+// variable used for communication
 const int BUFFER_SIZE = 64; // Adjust the buffer size as needed
 char buffer[BUFFER_SIZE];
 int bufferIndex = 0;
 int number = 100;
+// variable used for competition
 bool competition = true;
 int ok = 1;
 
@@ -72,12 +68,12 @@ PositionTaskBuilder positionTaskBuilder(& positionControler, & driveControler, &
 
 #if IS_MAIN
     Arm myArm(PIN_ARM, ARM_TIME);
-Claw myClaw(PIN_CLAW_1, PIN_CLAW_2, CLAW_TIME);
-ESPNowMaster espNowMaster;
+    Claw myClaw(PIN_CLAW_1, PIN_CLAW_2, CLAW_TIME);
+    ESPNowMaster espNowMaster;
 
 #else
     Radar radar(TRIGGER_PIN, ECHO_PIN);
-ESPNowSlave espNowSlave(& taskControler, & positionTaskBuilder);
+    ESPNowSlave espNowSlave(& taskControler, & positionTaskBuilder);
 
 #endif
 
@@ -147,10 +143,11 @@ void setup()
         espNowMaster.AddSlave(pami_noir);
     }
     
+    // Initialize the ESPNow master
     espNowMaster.Init();
-    
-    
+    // Initialize the claw
     myClaw.Init();
+    // Initialize the LCD
     pinMode(35, INPUT);
     lcd.begin();
     lcd.display();
@@ -159,16 +156,15 @@ void setup()
     lcd.print("Nombre de points:");
     lcd.setCursor(0, 1);
     lcd.print("32");
-    
+    // Initialize the arm
     myArm.Init();
+    // Initialize the radar transmission
     Serial2.begin(9600, SERIAL_8N1, RXp2, TXp2);
     
     #else
         radar.Init();
-    
-    espNowSlave.Init();
-    
-    driveControler.AddRadar( & radar, FRONT);
+        espNowSlave.Init();
+        driveControler.AddRadar( & radar, FRONT);
     #endif
     
     // Motor setup
@@ -216,106 +212,80 @@ int processBuffer()
     }
     return parsed_number;
 }
+
+void handleCompetitionTasks(){
+    // Start the communication with the ESPNow slaves
+    espNowMaster.Start();
+    
+    // part 1 -> go to the line and rotate -> open claw
+    taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 95));
+    taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, -90));
+    taskControler.AddTask(new ClawTask(& myClaw, OPEN));
+    
+    // part 2 -> Recolt the flowers and go to dropzone
+    taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 95)); 
+    taskControler.AddTask(new ClawTask(& myClaw, CLOSE));
+    taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, -50)); 
+    taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 65 ));
+    
+    // part 3 -> Cash the flowers
+    taskControler.AddTask(new ClawTask(& myClaw, OPEN));
+    taskControler.AddTask(new ReverseTask(& driveControler, & valueConverter, 30)); 
+    
+    // part 4 -> Go to next circle
+    taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, 140));
+    taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 76)); 
+    taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, 45));
+    taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 53));
+    taskControler.AddTask(new ClawTask(& myClaw, CLOSE));
+    
+    // part 5 -> Align for cash in
+    taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, 60));
+    taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 35));
+    taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, -90));
+    taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 75));
+    taskControler.AddTask(new ClawTask(& myClaw, OPEN));
+    taskControler.AddTask(new ReverseTask(& driveControler, & valueConverter, 15));
+    
+    // Set the task controler to auto mode and start it
+    taskControler.SetAutoMode(true);
+    taskControler.Start();
+    ok = 0;
+}
 void loop()
 {
-    
     #if IS_MAIN
-        
+        // Check if the competition has started
         while(digitalRead(35) != LOW) {
-        Serial.println("attente");
-    }
-    
-    
-    if (competition == true && ok ==  1) {
-        
-        espNowMaster.Start();
-        //part 1 -> go to the line and rotate -> open claw
-        taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 95));
-        taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, -90));
-        taskControler.AddTask(new ClawTask(& myClaw, OPEN));
-        
-        //part 2 -> Recolt the flowers
-        taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 95)); //94, 90
-        taskControler.AddTask(new ClawTask(& myClaw, CLOSE));
-        taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, -50)); // AJOUT strat2
-        //taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 55));Strat1
-        taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 65 ));
-        
- 
-        //part 3 -> Cash the flowers
-        // taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, -90));Strat1
-        //taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 50));Strat1
-        taskControler.AddTask(new ClawTask(& myClaw, OPEN));
-        //taskControler.AddTask(new ReverseTask(& driveControler, & valueConverter, 50));Strat1
-        taskControler.AddTask(new ReverseTask(& driveControler, & valueConverter, 30)); //Ajout strat2
-        
-        //part 4 -> Go to next circle
-        //taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, -152)); Strat1
-        taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, 140)); // ajout strat 2
-        //taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 76)); //Strat1
-        taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 76)); // Ajout start 2
-        //taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, -10)); //Strat1
-        taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, 45));// Ajout start 2
-        //taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 62));// strat1
-        taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 53));// Ajout start 2
-        taskControler.AddTask(new ClawTask(& myClaw, CLOSE));
-        
-        
-        //part 5 -> Align for cash in
-        //taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, 72));// Strat 1
-        taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, 60));// Ajout start 2
-        //taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 22));//Strat 1
-        taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 35));// Ajout start 2
-        //taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, -90)); //Strat1
-        taskControler.AddTask(new RotationTask(& driveControler, & valueConverter, -90));// Ajout start 2
-        //taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 42)); // strat1
-        taskControler.AddTask(new ForwardTask(& driveControler, & valueConverter, 75));// Ajout start 2
-        taskControler.AddTask(new ClawTask(& myClaw, OPEN));
-        //taskControler.AddTask(new ReverseTask(& driveControler, & valueConverter, 25));//Strat1
-        taskControler.AddTask(new ReverseTask(& driveControler, & valueConverter, 15));// Ajout start 2
-        
-        
-        taskControler.SetAutoMode(true);
-        taskControler.Start();
-        ok = 0;
-    }
-    
-    while(Serial2.available() > 0)
-    {
-        char incomingByte = Serial2.read();
-        
-        // Store incoming byte in the buffer
-        buffer[bufferIndex++] = incomingByte;
-        
-        // Check if the buffer is full
-        if (bufferIndex >= BUFFER_SIZE)
-        {
-            processBuffer(); // Process the buffer when it's full
+            Serial.println("attente");
         }
-    }
-    
-    // Process remaining data in the buffer
-    if (bufferIndex > 0)
-    {
-        processBuffer();
-    }
-    
-    
-    
-    
-    espNowMaster.Update();
-    
-    lcd.setCursor(0, 0);
-    lcd.print("Nombre de points: ");
-    lcd.print("32");
-    lcd.setCursor(0,1);
-    lcd.print("X:");
-    lcd.print(positionControler.GetCurrentPoint().x);
-    lcd.print(" Y:");
-    lcd.print(positionControler.GetCurrentPoint().y);
-    lcd.print(" A:");
-    lcd.print(positionControler.GetCurrentAngle());
-    
+        
+        if (competition == true && ok ==  1) {
+            handleCompetitionTasks();        
+        }
+        
+        while(Serial2.available() > 0)
+        {
+            char incomingByte = Serial2.read();
+            
+            // Store incoming byte in the buffer
+            buffer[bufferIndex++] = incomingByte;
+            
+            // Check if the buffer is full
+            if (bufferIndex >= BUFFER_SIZE)
+            {
+                processBuffer(); // Process the buffer when it's full
+            }
+        }
+        
+        // Process remaining data in the buffer
+        if (bufferIndex > 0)
+        {
+            processBuffer();
+        }
+       
+        // Update to see if the time is up
+        espNowMaster.Update();
     #endif
     
     taskControler.Update();
