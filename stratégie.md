@@ -27,4 +27,4 @@ Une dernière manière de marquer des points est de pouvoir prédire le score qu
 Bigboy et nos PAMIs utiliseront le même code avec le système de tâche. La détection de collision se fera à l'aide de capteurs ultrasons.
 Si tout se passe comme prévu, nous devrions idéalement marquer 70 points.
 
-$![Map](/strat_1.png)$
+![Map](/strat_1.png)
