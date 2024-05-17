@@ -9,7 +9,7 @@
 - Anticipate future crop yields
 
 ## Rules highlight
-$![](/map.png)$
+![](/map.png)
 
 |||
 |-|-|
