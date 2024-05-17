@@ -1,15 +1,15 @@
 # The Big boy
-[Eurobot](www.eurobot.org)
+[Eurobot](https://www.coupederobotique.fr/wp-content/uploads/Eurobot2024_Rules_CUP_EN_FINAL.pdf)
 
 ## Mission
-- Repot the plants and put them in cultivation
+- Repot the plants and place them in cultivation
 - Orient the solar panels
 - Pollinate the plants
 - Return to charge batteries
-- Anticipate future crop yield
+- Anticipate future crop yields
 
 ## Rules highlight
-![map](https://private-user-images.githubusercontent.com/23726572/280705573-2970816a-4791-41fb-b9a9-4060374664ed.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTEiLCJleHAiOjE2OTkyNzM5NTgsIm5iZiI6MTY5OTI3MzY1OCwicGF0aCI6Ii8yMzcyNjU3Mi8yODA3MDU1NzMtMjk3MDgxNmEtNDc5MS00MWZiLWI5YTktNDA2MDM3NDY2NGVkLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFJV05KWUFYNENTVkVINTNBJTJGMjAyMzExMDYlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjMxMTA2VDEyMjczOFomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTg5YmUzYmZhNWY3OTEyNTQyMDhiZDU4YzA4OWE1MDRjMTI5MGUyMGEyNzRkYzAwNzg3YjA1ZDI1ZDBkMWNhMTYmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.Bajujn_Csbh1FggLT4hk8UkJ210yp5451AsTSYxXo24)
+$![Map](/map.png)$
 
 |||
 |-|-|
@@ -27,26 +27,21 @@
 ### Positionning
 
 #### Bigboy
-- Use a Kinect tower and Raspberry Pi rest server
-- Big Boy asks at a fixed frequency where he is and what path he needs based on the requested zone
+- Bigboy will be positioned in the departure area in a defined position.
+- Bigboy will use its encoders to know its position.
+- The mouvement will be determine by the system of tasks.
+
 #### Ladybirds
-- Ladybirds -> ask the time to the tower.
-- Activate when needed.
-- Ask the path to the tower.
-- Repeat to update the path.
+- Ladybirds will wait for the Bigboy to send a signal to start moving.
 
 ### Plants
 
-#### Load internal storage
-- Takes plants from 5
-- Takes pots from 4
+#### Storage
+- Plants will be stored in the storage area of the robot.
 
-#### Unload storage
-- ID the plants -> RFID -> decide where to put.
-- Load the plant into the pot
-- type 1 -> commun | type 2 -> reserved
+#### Open/Close the claw
+- Bigboy will open and close its claw to take/let plants in its storage area.
+- The claws will be controlled by servo motor.
 
 ### Solar
-
-## Case study
- 
+- Not done in this project
